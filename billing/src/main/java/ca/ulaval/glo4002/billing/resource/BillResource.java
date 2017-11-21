@@ -1,7 +1,9 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.persistence.repository.ClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.BillService;
+import ca.ulaval.glo4002.billing.service.TransactionService;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
@@ -10,10 +12,12 @@ import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillResponse;
 import ca.ulaval.glo4002.billing.service.factory.BillServiceFactory;
+import ca.ulaval.glo4002.billing.service.factory.TransactionServiceFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,9 +28,11 @@ public class BillResource
 {
     private static final String EMPTY_JSON_VALUE = "{}";
     private final BillService billService;
+    private final TransactionService transactionService;
 
     public BillResource()
     {
+        this.transactionService = new TransactionServiceFactory().create();
         this.billService = new BillServiceFactory().create();
     }
 
@@ -53,6 +59,12 @@ public class BillResource
     {
         BillAcceptationResponse response = this.billService.acceptBill(billNumber);
 
+        long clientId = this.billService.retrieveRelatedClientId(billNumber);
+
+        BigDecimal billAmount = this.billService.retrieveBillAmount(billNumber);
+
+        this.transactionService.logInvoiceAcceptance(clientId, billAmount);
+
         return Response.ok()
                 .entity(response)
                 .build();
@@ -63,6 +75,12 @@ public class BillResource
     public Response cancelBill(@PathParam("id") long billNumber)
     {
         this.billService.cancelBill(billNumber);
+
+        long clientId = this.billService.retrieveRelatedClientId(billNumber);
+
+        BigDecimal billAmount = this.billService.retrieveBillAmount(billNumber);
+
+        this.transactionService.logInvoiceCancellation(clientId, billAmount);
 
         return Response.accepted()
                 .entity(EMPTY_JSON_VALUE)
@@ -100,6 +118,10 @@ public class BillResource
         }
 
         this.billService.applyDiscount(billNumber, request);
+
+        long clientId = this.billService.retrieveRelatedClientId(billNumber);
+
+        this.transactionService.logDiscount(clientId, request.amount);
 
         return Response.ok()
                 .entity(EMPTY_JSON_VALUE)

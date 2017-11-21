@@ -27,7 +27,7 @@ public class EntityManagerFactoryFactory
 {
     private static final String H2_DRIVER_CLASS = "org.h2.Driver";
     private static final String DATABASE_URL = "jdbc:h2:~/billing";
-    private static final String DATABASE_STARTUP_MODE = "create";
+    private static final String DATABASE_STARTUP_MODE = "update";
     private static EntityManagerFactory entityManagerFactory;
 
     public EntityManagerFactory create()

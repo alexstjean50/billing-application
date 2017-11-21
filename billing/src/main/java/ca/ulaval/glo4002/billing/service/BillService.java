@@ -26,6 +26,7 @@ import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
 import com.google.common.collect.ImmutableMap;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -127,6 +128,21 @@ public class BillService
         }
 
         return createClientsBillResponses(billsByClientId);
+    }
+
+    public long retrieveRelatedClientId(long billNumber)
+    {
+        Account account = this.accountRepository.findByBillNumber(billNumber);
+
+        return account.getClientId();
+    }
+
+
+    public BigDecimal retrieveBillAmount(long billNumber)
+    {
+        Account account = this.accountRepository.findByBillNumber(billNumber);
+
+        return account.findBillByNumber(billNumber).calculateSubTotal().asBigDecimal();
     }
 
     private Map<Long, List<Bill>> retrieveBillsOfClients(Optional<Long> optionalClientId)
