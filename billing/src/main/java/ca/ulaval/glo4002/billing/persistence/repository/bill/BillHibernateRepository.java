@@ -17,7 +17,7 @@ public class BillHibernateRepository implements BillRepository
     }
 
     @Override
-    public long retrieveNextBillNumber()
+    public synchronized long retrieveNextBillNumber()
     {
         Optional<BigInteger> maximumBillNumber = this.retrieveMaximumBillNumber();
 
@@ -25,7 +25,7 @@ public class BillHibernateRepository implements BillRepository
                 .longValue() + 1;
     }
 
-    private Optional<BigInteger> retrieveMaximumBillNumber()
+    private synchronized Optional<BigInteger> retrieveMaximumBillNumber()
     {
         String query = "select MAX(BILL_NUMBER) from BILL";
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();

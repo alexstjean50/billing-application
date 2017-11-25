@@ -15,6 +15,7 @@ import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
 import ca.ulaval.glo4002.billing.service.filter.OverdueBillsFilter;
 import ca.ulaval.glo4002.billing.service.filter.PaidBillsFilter;
@@ -65,6 +66,8 @@ public class BillServiceTest
     @Mock
     private ItemRequestAssembler itemRequestAssembler;
     @Mock
+    private BillCreationResponseAssembler billCreationResponseAssembler;
+    @Mock
     private BillsFilterFactory billsFilterFactory;
     @Mock
     private PaidBillsFilter paidBillsFilter;
@@ -84,7 +87,7 @@ public class BillServiceTest
     public void initializeEmptyBillServiceAndBillCreationRequest()
     {
         this.billService = new BillService(this.clientRepository, this.accountRepository, this.productRepository,
-                this.billRepository, this.itemRequestAssembler, this.billsFilterFactory, this.accountFactory);
+                this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler, this.billsFilterFactory, this.accountFactory);
     }
 
     @Test
@@ -134,7 +137,7 @@ public class BillServiceTest
         BillCreationRequest billCreationRequest = createBillCreationRequest();
         this.billService.createBill(billCreationRequest);
 
-        verify(this.itemRequestAssembler, times(billCreationRequest.itemRequests.size())).toDomainModel(any());
+        verify(this.itemRequestAssembler, times(billCreationRequest.itemRequests.size())).toDomainModel(any(ItemRequest.class));
     }
 
     @Test

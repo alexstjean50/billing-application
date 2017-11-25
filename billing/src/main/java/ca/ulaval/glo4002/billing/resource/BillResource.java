@@ -1,6 +1,5 @@
 package ca.ulaval.glo4002.billing.resource;
 
-import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.persistence.repository.ClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.TransactionService;

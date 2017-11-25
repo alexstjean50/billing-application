@@ -29,14 +29,14 @@ public class AccountHibernateRepository implements AccountRepository
     }
 
     @Override
-    public void save(Account account)
+    public synchronized void save(Account account)
     {
         AccountEntity accountEntity = this.accountAssembler.toPersistenceModel(account);
         this.hibernateQueryHelper.save(accountEntity);
     }
 
     @Override
-    public List<Account> findAll()
+    public synchronized List<Account> findAll()
     {
         return this.hibernateQueryHelper.findAll()
                 .stream()
@@ -45,7 +45,7 @@ public class AccountHibernateRepository implements AccountRepository
     }
 
     @Override
-    public Account findByClientId(long clientId)
+    public synchronized Account findByClientId(long clientId)
     {
         AccountEntity accountEntity;
         try
@@ -73,7 +73,7 @@ public class AccountHibernateRepository implements AccountRepository
     }
 
     @Override
-    public Account findByBillNumber(long billNumber)
+    public synchronized Account findByBillNumber(long billNumber)
     {
         try
         {

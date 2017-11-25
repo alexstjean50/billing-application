@@ -4,6 +4,7 @@ import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
@@ -19,10 +20,11 @@ public class BillServiceFactory
         ProductRepository productRepository = ServiceLocator.getService(ServiceLocator.PRODUCT_REPOSITORY);
         BillRepository billRepository = ServiceLocator.getService(ServiceLocator.BILL_REPOSITORY);
         ItemRequestAssembler itemRequestAssembler = new ItemRequestAssembler();
+        BillCreationResponseAssembler billCreationResponseAssembler = new BillCreationResponseAssembler();
         BillsFilterFactory billsFilterFactory = new BillsFilterFactory();
         AccountFactory accountFactory = new AccountFactory();
 
         return new BillService(clientRepository, accountRepository, productRepository, billRepository,
-                itemRequestAssembler, billsFilterFactory, accountFactory);
+                itemRequestAssembler, billCreationResponseAssembler, billsFilterFactory, accountFactory);
     }
 }

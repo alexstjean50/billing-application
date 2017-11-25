@@ -37,7 +37,7 @@ public class TransactionHibernateRepository implements TransactionRepository
     }
 
     @Override
-    public List<Transaction> findAll()
+    public synchronized List<Transaction> findAll()
     {
         return this.transactionEntityHibernateQueryHelper.findAll()
                 .stream()

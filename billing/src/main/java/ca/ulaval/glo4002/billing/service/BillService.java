@@ -18,6 +18,7 @@ import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.ItemResponse;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.filter.BillsFilter;
 import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
@@ -38,12 +39,14 @@ public class BillService
     private final ProductRepository productRepository;
     private final BillRepository billRepository;
     private final ItemRequestAssembler itemRequestAssembler;
+    private final BillCreationResponseAssembler billCreationResponseAssembler;
     private final BillsFilterFactory billsFilterFactory;
     private final AccountFactory accountFactory;
 
     public BillService(ClientRepository clientRepository, AccountRepository accountRepository,
                        ProductRepository productRepository, BillRepository billRepository,
-                       ItemRequestAssembler itemRequestAssembler, BillsFilterFactory billsFilterFactory,
+                       ItemRequestAssembler itemRequestAssembler, BillCreationResponseAssembler
+                               billCreationResponseAssembler, BillsFilterFactory billsFilterFactory,
                        AccountFactory accountFactory)
     {
         this.accountRepository = accountRepository;
@@ -51,6 +54,7 @@ public class BillService
         this.productRepository = productRepository;
         this.billRepository = billRepository;
         this.itemRequestAssembler = itemRequestAssembler;
+        this.billCreationResponseAssembler = billCreationResponseAssembler;
         this.billsFilterFactory = billsFilterFactory;
         this.accountFactory = accountFactory;
     }
@@ -60,9 +64,7 @@ public class BillService
         this.validateThatProductIdsExist(request.itemRequests);
         Account account = this.retrieveClientAccount(request.clientId);
 
-        List<Item> items = request.itemRequests.stream()
-                .map(this.itemRequestAssembler::toDomainModel)
-                .collect(Collectors.toList());
+        List<Item> items = this.itemRequestAssembler.toDomainModel(request.itemRequests);
 
         long newBillNumber = this.billRepository.retrieveNextBillNumber();
         account.createBill(newBillNumber, request.creationDate,
@@ -72,10 +74,7 @@ public class BillService
         this.accountRepository.save(account);
 
         Bill createdBill = account.findBillByNumber(newBillNumber);
-        return BillCreationResponse.create(createdBill.getBillNumber(), createdBill.calculateSubTotal()
-                        .asBigDecimal(),
-                createdBill.getDueTerm()
-                        .name());
+        return this.billCreationResponseAssembler.toCreationResponse(createdBill);
     }
 
     private void validateThatProductIdsExist(List<ItemRequest> itemRequests)
