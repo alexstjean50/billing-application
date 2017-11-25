@@ -5,25 +5,18 @@ import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.BillStatus;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
-import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
-import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
 import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
-import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
-import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
-import ca.ulaval.glo4002.billing.service.filter.OverdueBillsFilter;
-import ca.ulaval.glo4002.billing.service.filter.PaidBillsFilter;
-import ca.ulaval.glo4002.billing.service.filter.UnpaidBillsFilter;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillsByClientIdResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
-import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +28,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.BDDMockito.*;
@@ -67,6 +59,8 @@ public class BillServiceTest
     @Mock
     private BillAcceptationResponseAssembler billAcceptationResponseAssembler;
     @Mock
+    private BillsByClientIdResponseAssembler billsByClientIdResponseAssembler;
+    @Mock
     private AccountFactory accountFactory;
     @Mock
     private Account account;
@@ -80,7 +74,8 @@ public class BillServiceTest
     public void initializeEmptyBillServiceAndBillCreationRequest()
     {
         this.billService = new BillService(this.accountRepository, this.productRepository,
-                this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler, this.billAcceptationResponseAssembler, this.accountRetriever);
+                this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler,
+                this.billAcceptationResponseAssembler, this.billsByClientIdResponseAssembler, this.accountRetriever);
     }
 
     @Test
@@ -248,7 +243,6 @@ public class BillServiceTest
     private void setSuccessfulBehaviorsForCreationRequest()
     {
         given(this.accountRetriever.retrieveClientAccount(SOME_CLIENT_ID)).willReturn(this.account);
-        given(this.account.findBillByNumber(anyLong())).willReturn(this.createEmptyBill());
     }
 
     private void setSuccessfulBehaviorsForAcceptationRequest()

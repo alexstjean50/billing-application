@@ -4,6 +4,7 @@ import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.persistence.assembler.account.AccountAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AccountEntity;
+import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.persistence.manager.HibernateQueryHelper;
 import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
@@ -24,6 +25,8 @@ public class AccountHibernateRepository implements AccountRepository
     private final HibernateQueryHelper<AccountEntity> hibernateQueryHelper;
     private final AccountAssembler accountAssembler;
     private final BillsFilterFactory billsFilterFactory;
+    private static final Map<Long, Account> accountsByClientIdCache = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Long, Account> accountsByBillNumberCache = Collections.synchronizedMap(new HashMap<>());
 
     public AccountHibernateRepository(AccountAssembler accountAssembler, EntityManagerFactory entityManagerFactory,
                                       HibernateQueryHelper<AccountEntity>
@@ -38,21 +41,30 @@ public class AccountHibernateRepository implements AccountRepository
     @Override
     public synchronized void save(Account account)
     {
+        if (account.isSaved())
+        {
+            accountsByClientIdCache.put(account.getClientId(), account);
+            account.getBills()
+                    .stream()
+                    .filter(Bill::isSaved)
+                    .forEach(bill -> accountsByBillNumberCache.put(bill.getBillNumber(), account));
+        }
         AccountEntity accountEntity = this.accountAssembler.toPersistenceModel(account);
         this.hibernateQueryHelper.save(accountEntity);
     }
 
     @Override
-    public synchronized List<Account> findAll()
+    public Account findByClientId(long clientId)
     {
-        return this.hibernateQueryHelper.findAll()
-                .stream()
-                .map(accountAssembler::toDomainModel)
-                .collect(Collectors.toList());
+        return findByClientIdInCache(clientId).orElse(findByClientIdInDatabase(clientId));
     }
 
-    @Override
-    public synchronized Account findByClientId(long clientId)
+    private Optional<Account> findByClientIdInCache(long clientId)
+    {
+        return Optional.ofNullable(accountsByClientIdCache.get(clientId));
+    }
+
+    private Account findByClientIdInDatabase(long clientId)
     {
         AccountEntity accountEntity;
         try
@@ -82,6 +94,16 @@ public class AccountHibernateRepository implements AccountRepository
     @Override
     public synchronized Account findByBillNumber(long billNumber)
     {
+        return findByBillNumberInCache(billNumber).orElse(findByBillNumberInDatabase(billNumber));
+    }
+
+    private Optional<Account> findByBillNumberInCache(long billNumber)
+    {
+        return Optional.ofNullable(accountsByBillNumberCache.get(billNumber));
+    }
+
+    private Account findByBillNumberInDatabase(long billNumber)
+    {
         try
         {
             //@formatter:off
@@ -109,7 +131,8 @@ public class AccountHibernateRepository implements AccountRepository
     }
 
     @Override
-    public Map<Long, List<Bill>> retrieveFilteredBillsOfClients(Optional<Long> optionalClientId, Optional<BillStatusParameter> status)
+    public Map<Long, List<Bill>> retrieveFilteredBillsOfClients(Optional<Long> optionalClientId,
+                                                                Optional<BillStatusParameter> status)
     {
         Map<Long, List<Bill>> billsByClientId = retrieveBillsOfClients(optionalClientId);
 
@@ -148,14 +171,24 @@ public class AccountHibernateRepository implements AccountRepository
                 .collect(Collectors.toMap(Account::getClientId, Account::retrieveAcceptedBills));
     }
 
+    private List<Account> findAll()
+    {
+        return this.hibernateQueryHelper.findAll()
+                .stream()
+                .map(accountAssembler::toDomainModel)
+                .collect(Collectors.toList());
+    }
+
     private Map<Long, List<Bill>> retrieveClientBills(long clientId)
     {
-        try {
+        try
+        {
             Account account = findByClientId(clientId);
             return ImmutableMap.of(clientId, account.retrieveAcceptedBills());
-        } catch (AccountClientNotFoundException exception) {
+        }
+        catch (AccountClientNotFoundException exception)
+        {
             return ImmutableMap.of(clientId, Collections.emptyList());
         }
-
     }
 }

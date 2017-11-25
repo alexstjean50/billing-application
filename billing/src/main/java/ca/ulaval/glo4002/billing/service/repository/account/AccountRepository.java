@@ -12,8 +12,6 @@ public interface AccountRepository
 {
     void save(Account account);
 
-    List<Account> findAll();
-
     Account findByClientId(long clientId);
 
     Account findByBillNumber(long billNumber);

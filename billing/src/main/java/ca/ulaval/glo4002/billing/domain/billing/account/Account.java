@@ -11,6 +11,7 @@ import ca.ulaval.glo4002.billing.domain.strategy.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +53,13 @@ public class Account
         return new Account(identity, client, allocationStrategy, payments, bills);
     }
 
-    public void createBill(long billNumber, Instant creationDate, Optional<DueTerm> dueTerm, List<Item> items)
+    public Bill createBill(long billNumber, Instant creationDate, Optional<DueTerm> dueTerm, List<Item> items)
     {
         DueTerm appliedDueTerm = dueTerm.orElseGet(this.client::getDefaultTerm);
         Bill bill = Bill.create(billNumber, creationDate, appliedDueTerm, items);
         this.bills.add(bill);
+
+        return bill;
     }
 
     public void cancelBill(long billNumber)
@@ -70,9 +73,16 @@ public class Account
     public Bill findBillByNumber(long billNumber)
     {
         return this.bills.stream()
-                .filter(bill -> bill.getBillNumber() == billNumber)
+                .filter(bill -> bill.isEqualBillNumber(billNumber))
                 .findFirst()
                 .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
+    }
+
+    public BigDecimal retrieveBillAmount(long billNumber)
+    {
+        return findBillByNumber(billNumber)
+                .calculateSubTotal()
+                .asBigDecimal();
     }
 
     public void addPayment(Payment payment)
@@ -100,6 +110,11 @@ public class Account
         bill.removeAllAllocations();
         this.payments.forEach(payment -> payment.removeAllocations(billNumber));
         allocate();
+    }
+
+    public boolean isSaved()
+    {
+        return accountId != Identity.EMPTY;
     }
 
     public void allocate()

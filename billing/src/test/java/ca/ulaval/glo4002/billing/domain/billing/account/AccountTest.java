@@ -32,7 +32,6 @@ public class AccountTest
     private static final Instant SOME_DATE = Instant.EPOCH;
     private static final List<Item> SOME_ITEMS = new ArrayList<>();
     private static final long SOME_BILL_NUMBER = 42;
-    private static final long SOME_OTHER_BILL_NUMBER = 43;
     private static final Money SOME_DISCOUNT_AMOUNT = Money.valueOf(4.2);
     private static final String SOME_DESCRIPTION = "TheFallen";
     @Mock
@@ -67,7 +66,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenAcceptingTheBill_thenTheBillShouldBeAccepted()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         account.acceptBill(SOME_BILL_NUMBER, SOME_DATE);
@@ -78,7 +77,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenAcceptingTheBill_thenShouldCallAllocationStrategy()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         account.acceptBill(SOME_BILL_NUMBER, SOME_DATE);
@@ -90,9 +89,9 @@ public class AccountTest
     public void givenAnAccountWithBills_whenAcceptingABill_thenOtherBillsAreNotWronglyAccepted()
     {
         Bill billToAccept = mock(Bill.class);
-        given(billToAccept.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(billToAccept.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Bill billNotAccepted = mock(Bill.class);
-        given(billNotAccepted.getBillNumber()).willReturn(SOME_OTHER_BILL_NUMBER);
+        given(billNotAccepted.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(false);
         Account account = createAccountWithManyBills(Arrays.asList(billNotAccepted, billToAccept));
 
         account.acceptBill(SOME_BILL_NUMBER, SOME_DATE);
@@ -119,7 +118,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenFindingTheBill_thenShouldReturnTheSameBill()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         Bill billFound = account.findBillByNumber(SOME_BILL_NUMBER);
@@ -130,7 +129,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenCancellingTheBill_thenPaymentsShouldRemoveAllocationsRelatedToBill()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Account account = createAccountWithPayments(this.bill, Collections.singletonList(SOME_PAYMENT));
 
         account.cancelBill(SOME_BILL_NUMBER);
@@ -142,7 +141,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenCancellingTheBill_thenBillShouldBeCanceled()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         account.cancelBill(SOME_BILL_NUMBER);
@@ -153,7 +152,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenCancellingTheBill_thenShouldReallocate()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         account.cancelBill(SOME_BILL_NUMBER);
@@ -172,7 +171,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenApplyingDiscountOnTheBill_thenDiscountShouldBeApplied()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
@@ -186,7 +185,7 @@ public class AccountTest
     public void
     givenAnAccountWithABillThatIsNotAccepted_whenApplyingDiscountOnTheBill_thenShouldThrowDomainAccountBillNotFoundException()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         given(this.bill.isAccepted()).willReturn(false);
         Account account = createAccountWithABill(this.bill);
 
@@ -197,7 +196,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenApplyingDiscountOnTheBill_thenBillShouldRemoveAllItsAllocations()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
@@ -211,7 +210,7 @@ public class AccountTest
     public void
     givenAnAccountWithABillAndPayments_whenApplyingDiscountOnTheBill_thenRelatedPaymentsShouldUnallocate()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithPayments(this.bill, Collections.singletonList(SOME_OTHER_PAYMENT));
 
@@ -225,7 +224,7 @@ public class AccountTest
     @Test
     public void givenAnAccountWithABill_whenApplyingDiscountOnTheBill_thenShouldReallocate()
     {
-        given(this.bill.getBillNumber()).willReturn(SOME_BILL_NUMBER);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 

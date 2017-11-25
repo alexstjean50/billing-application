@@ -163,6 +163,16 @@ public class Bill implements Comparable<Bill>
         this.allocations.clear();
     }
 
+    public boolean isEqualBillNumber(long billNumber)
+    {
+        return this.billNumber == billNumber;
+    }
+
+    public boolean isSaved()
+    {
+        return billId != Identity.EMPTY;
+    }
+
     @Override
     public int compareTo(Bill that)
     {
