@@ -92,7 +92,7 @@ public class BillResource
         Optional<Long> optionalClientId = Optional.ofNullable(clientId);
         try
         {
-            List<BillResponse> response = this.billService.getBills(optionalClientId,
+            List<BillResponse> response = this.billService.retrieveBills(optionalClientId,
                     Optional.ofNullable(status));
 
             return Response.ok()

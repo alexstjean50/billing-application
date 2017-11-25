@@ -15,6 +15,7 @@ import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
 import ca.ulaval.glo4002.billing.service.filter.OverdueBillsFilter;
@@ -43,20 +44,16 @@ import static org.mockito.BDDMockito.*;
 public class BillServiceTest
 {
     private static final long SOME_CLIENT_ID = 0;
-    private static final long SOME_OTHER_CLIENT_ID = SOME_CLIENT_ID + 23;
     private static final Instant SOME_CREATION_DATE = Instant.parse("2017-08-21T16:59:20.142Z");
     private static final long SOME_PRODUCT_ID = 42;
     private static final DueTerm SOME_DUE_TERM = DueTerm.IMMEDIATE;
     private static final long SOME_BILL_NUMBER = 1111;
     private static final BigDecimal SOME_DISCOUNT_AMOUNT = BigDecimal.valueOf(7.42);
     private static final String SOME_DESCRIPTION = "Blackout";
-    private static final Client SOME_CLIENT = new Client(SOME_CLIENT_ID, Instant.now(), SOME_DUE_TERM);
     private static final int SOME_LIST_SIZE = 3;
     private static final BillStatus SOME_BILL_STATUS = BillStatus.ACCEPTED;
     private static final Identity SOME_IDENTITY = mock(Identity.class);
     private static final Instant SOME_DATE = Instant.now();
-    @Mock
-    private ClientRepository clientRepository;
     @Mock
     private AccountRepository accountRepository;
     @Mock
@@ -68,42 +65,22 @@ public class BillServiceTest
     @Mock
     private BillCreationResponseAssembler billCreationResponseAssembler;
     @Mock
-    private BillsFilterFactory billsFilterFactory;
-    @Mock
-    private PaidBillsFilter paidBillsFilter;
-    @Mock
-    private UnpaidBillsFilter unpaidBillsFilter;
-    @Mock
-    private OverdueBillsFilter overdueBillsFilter;
+    private BillAcceptationResponseAssembler billAcceptationResponseAssembler;
     @Mock
     private AccountFactory accountFactory;
     @Mock
     private Account account;
     @Mock
     private ItemRequest itemRequest;
+    @Mock
+    private AccountRetriever accountRetriever;
     private BillService billService;
 
     @Before
     public void initializeEmptyBillServiceAndBillCreationRequest()
     {
-        this.billService = new BillService(this.clientRepository, this.accountRepository, this.productRepository,
-                this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler, this.billsFilterFactory, this.accountFactory);
-    }
-
-    @Test
-    public void givenClientIdWithoutAccount_whenCreatingBill_thenShouldCreateAccount()
-    {
-        this.setSuccessfulBehaviorsForCreationRequest();
-        given(this.accountRepository.findByClientId(SOME_OTHER_CLIENT_ID)).willThrow(new
-                AccountClientNotFoundException(String.valueOf(SOME_OTHER_CLIENT_ID)));
-        given(this.clientRepository.findById(SOME_OTHER_CLIENT_ID)).willReturn(SOME_CLIENT);
-        given(this.accountFactory.create(SOME_CLIENT)).willReturn(this.account);
-        BillCreationRequest billCreationRequest = BillCreationRequest.create(SOME_OTHER_CLIENT_ID,
-                SOME_CREATION_DATE, SOME_DUE_TERM.name(), Collections.singletonList(this.itemRequest));
-
-        this.billService.createBill(billCreationRequest);
-
-        verify(this.accountFactory).create(SOME_CLIENT);
+        this.billService = new BillService(this.accountRepository, this.productRepository,
+                this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler, this.billAcceptationResponseAssembler, this.accountRetriever);
     }
 
     @Test
@@ -114,7 +91,7 @@ public class BillServiceTest
 
         this.billService.createBill(billCreationRequest);
 
-        verify(this.accountRepository).findByClientId(SOME_CLIENT_ID);
+        verify(this.accountRetriever).retrieveClientAccount(SOME_CLIENT_ID);
     }
 
     @Test
@@ -250,62 +227,11 @@ public class BillServiceTest
     }
 
     @Test
-    public void givenEmptyClientId_whenGetBills_thenRetrieveAllAccounts()
-    {
-        List<Account> accounts = Collections.singletonList(this.account);
-        given(this.accountRepository.findAll()).willReturn(accounts);
-        given(this.account.retrieveAcceptedBills()).willReturn(Collections.singletonList(createEmptyBill()));
-
-        this.billService.getBills(Optional.empty(), Optional.empty());
-
-        verify(this.accountRepository).findAll();
-    }
-
-    @Test
     public void givenSomeClientId_whenGetBills_thenRetrieveAcceptedBillsFromAccountOfClientId()
     {
-        this.initializeGetBillsBehaviors();
-        given(this.account.retrieveAcceptedBills()).willReturn(Collections.singletonList(createEmptyBill()));
+        this.billService.retrieveBills(Optional.of(SOME_CLIENT_ID), Optional.empty());
 
-        this.billService.getBills(Optional.of(SOME_CLIENT_ID), Optional.empty());
-
-        verify(this.account).retrieveAcceptedBills();
-    }
-
-    @Test
-    public void givenAPaidBillStatusParameter_whenGettingBills_thenShouldFilterPaidBills()
-    {
-        this.initializeGetBillsBehaviors();
-        given(this.billsFilterFactory.create(BillStatusParameter.PAID)).willReturn(this.paidBillsFilter);
-        initializeGetBillsBehaviors();
-
-        this.billService.getBills(Optional.empty(), Optional.of(BillStatusParameter.PAID));
-
-        verify(this.paidBillsFilter).filter(any());
-    }
-
-    @Test
-    public void givenAnUnpaidBillStatusParameter_whenGettingBills_thenShouldFilterUnpaidBills()
-    {
-        this.initializeGetBillsBehaviors();
-        given(this.billsFilterFactory.create(BillStatusParameter.UNPAID)).willReturn(this.unpaidBillsFilter);
-        initializeGetBillsBehaviors();
-
-        this.billService.getBills(Optional.empty(), Optional.of(BillStatusParameter.UNPAID));
-
-        verify(this.unpaidBillsFilter).filter(any());
-    }
-
-    @Test
-    public void givenAOverdueBillStatusParameter_whenGettingBills_thenShouldFilterOverdueBills()
-    {
-        this.initializeGetBillsBehaviors();
-        given(this.billsFilterFactory.create(BillStatusParameter.OVERDUE)).willReturn(this.overdueBillsFilter);
-        initializeGetBillsBehaviors();
-
-        this.billService.getBills(Optional.empty(), Optional.of(BillStatusParameter.OVERDUE));
-
-        verify(this.overdueBillsFilter).filter(any());
+        verify(this.accountRepository).retrieveFilteredBillsOfClients(Optional.of(SOME_CLIENT_ID), Optional.empty());
     }
 
     private BillCreationRequest createBillCreationRequest()
@@ -321,7 +247,7 @@ public class BillServiceTest
 
     private void setSuccessfulBehaviorsForCreationRequest()
     {
-        given(this.accountRepository.findByClientId(SOME_CLIENT_ID)).willReturn(this.account);
+        given(this.accountRetriever.retrieveClientAccount(SOME_CLIENT_ID)).willReturn(this.account);
         given(this.account.findBillByNumber(anyLong())).willReturn(this.createEmptyBill());
     }
 
@@ -337,12 +263,6 @@ public class BillServiceTest
                 .equals(discountApplicationRequest.amount)
                 && discount.getDescription()
                 .equals(discountApplicationRequest.description);
-    }
-
-    private void initializeGetBillsBehaviors()
-    {
-        given(this.accountRepository.findAll()).willReturn(Collections.singletonList(this.account));
-        given(this.accountRepository.findByClientId(SOME_CLIENT_ID)).willReturn(this.account);
     }
 
     private Bill createEmptyBill()

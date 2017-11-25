@@ -2,13 +2,10 @@ package ca.ulaval.glo4002.billing.service;
 
 import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
-import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
-import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
-import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
@@ -18,51 +15,49 @@ import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.ItemResponse;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
-import ca.ulaval.glo4002.billing.service.filter.BillsFilter;
-import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
-import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
-import com.google.common.collect.ImmutableMap;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BillService
 {
-    private final ClientRepository clientRepository;
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
     private final BillRepository billRepository;
     private final ItemRequestAssembler itemRequestAssembler;
     private final BillCreationResponseAssembler billCreationResponseAssembler;
-    private final BillsFilterFactory billsFilterFactory;
-    private final AccountFactory accountFactory;
+    private final BillAcceptationResponseAssembler billAcceptationResponseAssembler;
+    private final AccountRetriever accountRetriever;
 
-    public BillService(ClientRepository clientRepository, AccountRepository accountRepository,
-                       ProductRepository productRepository, BillRepository billRepository,
-                       ItemRequestAssembler itemRequestAssembler, BillCreationResponseAssembler
-                               billCreationResponseAssembler, BillsFilterFactory billsFilterFactory,
-                       AccountFactory accountFactory)
+    public BillService(AccountRepository accountRepository, ProductRepository productRepository,
+                       BillRepository billRepository, ItemRequestAssembler itemRequestAssembler,
+                       BillCreationResponseAssembler billCreationResponseAssembler,
+                       BillAcceptationResponseAssembler billAcceptationResponseAssembler,
+                       AccountRetriever accountRetriever)
     {
         this.accountRepository = accountRepository;
-        this.clientRepository = clientRepository;
         this.productRepository = productRepository;
         this.billRepository = billRepository;
         this.itemRequestAssembler = itemRequestAssembler;
         this.billCreationResponseAssembler = billCreationResponseAssembler;
-        this.billsFilterFactory = billsFilterFactory;
-        this.accountFactory = accountFactory;
+        this.billAcceptationResponseAssembler = billAcceptationResponseAssembler;
+        this.accountRetriever = accountRetriever;
     }
 
     public BillCreationResponse createBill(BillCreationRequest request)
     {
         this.validateThatProductIdsExist(request.itemRequests);
-        Account account = this.retrieveClientAccount(request.clientId);
+        Account account = this.accountRetriever.retrieveClientAccount(request.clientId);
 
         List<Item> items = this.itemRequestAssembler.toDomainModel(request.itemRequests);
 
@@ -74,7 +69,7 @@ public class BillService
         this.accountRepository.save(account);
 
         Bill createdBill = account.findBillByNumber(newBillNumber);
-        return this.billCreationResponseAssembler.toCreationResponse(createdBill);
+        return this.billCreationResponseAssembler.toResponse(createdBill);
     }
 
     private void validateThatProductIdsExist(List<ItemRequest> itemRequests)
@@ -83,21 +78,6 @@ public class BillService
                 .map(ItemRequest::getProductId)
                 .collect(Collectors.toList());
         this.productRepository.findAll(productIds);
-    }
-
-    private Account retrieveClientAccount(long clientId)
-    {
-        Account account;
-        try
-        {
-            account = this.accountRepository.findByClientId(clientId);
-        }
-        catch (AccountClientNotFoundException exception)
-        {
-            Client client = this.clientRepository.findById(clientId);
-            account = this.accountFactory.create(client);
-        }
-        return account;
     }
 
     public void cancelBill(long billNumber)
@@ -113,18 +93,12 @@ public class BillService
         account.acceptBill(billNumber, Instant.now());
         Bill bill = account.findBillByNumber(billNumber);
         this.accountRepository.save(account);
-        return BillAcceptationResponse.create(bill.getBillNumber(), bill.getEffectiveDate(),
-                bill.calculateExpectedPaymentDate(), bill.getDueTerm());
+        return this.billAcceptationResponseAssembler.toResponse(bill);
     }
 
-    public List<BillResponse> getBills(Optional<Long> clientId, Optional<BillStatusParameter> status)
+    public List<BillResponse> retrieveBills(Optional<Long> clientId, Optional<BillStatusParameter> status)
     {
-        Map<Long, List<Bill>> billsByClientId = retrieveBillsOfClients(clientId);
-
-        if (status.isPresent())
-        {
-            billsByClientId = filterBills(status.get(), billsByClientId);
-        }
+        Map<Long, List<Bill>> billsByClientId = this.accountRepository.retrieveFilteredBillsOfClients(clientId, status);
 
         return createClientsBillResponses(billsByClientId);
     }
@@ -136,32 +110,13 @@ public class BillService
         return account.getClientId();
     }
 
-
     public BigDecimal retrieveBillAmount(long billNumber)
     {
         Account account = this.accountRepository.findByBillNumber(billNumber);
 
-        return account.findBillByNumber(billNumber).calculateSubTotal().asBigDecimal();
-    }
-
-    private Map<Long, List<Bill>> retrieveBillsOfClients(Optional<Long> optionalClientId)
-    {
-        return optionalClientId.map(this::retrieveClientBills)
-                .orElseGet(this::retrieveAllClientBills);
-    }
-
-    private Map<Long, List<Bill>> filterBills(BillStatusParameter status, Map<Long, List<Bill>> billsByClientId)
-    {
-        Map<Long, List<Bill>> filteredBillsByClientId = new HashMap<>();
-        BillsFilter billsFilter = this.billsFilterFactory.create(status);
-
-        for (Map.Entry<Long, List<Bill>> bill : billsByClientId.entrySet())
-        {
-            List<Bill> filteredBills = billsFilter.filter(bill.getValue());
-            filteredBillsByClientId.put(bill.getKey(), filteredBills);
-        }
-
-        return filteredBillsByClientId;
+        return account.findBillByNumber(billNumber)
+                .calculateSubTotal()
+                .asBigDecimal();
     }
 
     private List<BillResponse> createClientsBillResponses(Map<Long, List<Bill>> billsByClientId)
@@ -202,19 +157,6 @@ public class BillService
         return ItemResponse.create(item.getUnitPrice()
                 .asBigDecimal(), item.getNote(), item.getProductId(), item.getQuantity(), item.calculatePrice()
                 .asBigDecimal());
-    }
-
-    private Map<Long, List<Bill>> retrieveClientBills(long clientId)
-    {
-        Account account = retrieveClientAccount(clientId);
-        return ImmutableMap.of(clientId, account.retrieveAcceptedBills());
-    }
-
-    private Map<Long, List<Bill>> retrieveAllClientBills()
-    {
-        return this.accountRepository.findAll()
-                .stream()
-                .collect(Collectors.toMap(Account::getClientId, Account::retrieveAcceptedBills));
     }
 
     public void applyDiscount(long billNumber, DiscountApplicationRequest request)

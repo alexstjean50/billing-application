@@ -148,7 +148,7 @@ public class Bill implements Comparable<Bill>
 
     public void addDiscount(Discount discount)
     {
-        Money sumOfCurrentDiscounts = calculateSumOfCurrentDiscounts();
+        Money sumOfCurrentDiscounts = calculateTotalDiscountAmount();
         if (sumOfCurrentDiscounts.add(discount.getAmount())
                 .isGreaterThan(calculateTotalItemPrice()))
         {
@@ -156,14 +156,6 @@ public class Bill implements Comparable<Bill>
                     "bill.");
         }
         this.discounts.add(discount);
-    }
-
-    private Money calculateSumOfCurrentDiscounts()
-    {
-        return this.discounts.stream()
-                .map(Discount::getAmount)
-                .reduce(Money::add)
-                .orElse(Money.ZERO);
     }
 
     public void removeAllAllocations()

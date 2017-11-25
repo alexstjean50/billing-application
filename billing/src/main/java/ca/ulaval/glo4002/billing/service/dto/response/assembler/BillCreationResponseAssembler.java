@@ -5,7 +5,7 @@ import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 
 public class BillCreationResponseAssembler
 {
-    public BillCreationResponse toCreationResponse(Bill createdBill)
+    public BillCreationResponse toResponse(Bill createdBill)
     {
         return BillCreationResponse.create(createdBill.getBillNumber(), createdBill.calculateSubTotal()
                         .asBigDecimal(),

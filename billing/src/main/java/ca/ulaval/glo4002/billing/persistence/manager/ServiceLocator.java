@@ -14,6 +14,7 @@ import ca.ulaval.glo4002.billing.persistence.repository.client.ClientRestReposit
 import ca.ulaval.glo4002.billing.persistence.repository.payment.PaymentHibernateRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.product.ProductRestRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.transaction.TransactionHibernateRepository;
+import ca.ulaval.glo4002.billing.service.filter.BillsFilterFactory;
 import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
@@ -88,8 +89,10 @@ public class ServiceLocator
 
         TransactionAssembler transactionAssembler = new TransactionAssembler();
 
+        BillsFilterFactory billsFilterFactory = new BillsFilterFactory();
+
         this.loadService(ACCOUNT_REPOSITORY, new AccountHibernateRepository(accountAssembler, entityManagerFactory,
-                accountEntityHibernateQueryHelper));
+                accountEntityHibernateQueryHelper, billsFilterFactory));
         this.loadService(BILL_REPOSITORY, new BillHibernateRepository(entityManagerFactory));
         this.loadService(PAYMENT_REPOSITORY, new PaymentHibernateRepository(entityManagerFactory));
         this.loadService(TRANSACTION_REPOSITORY,
