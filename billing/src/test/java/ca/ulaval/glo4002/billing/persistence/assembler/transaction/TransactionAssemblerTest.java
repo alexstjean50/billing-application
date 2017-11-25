@@ -26,10 +26,9 @@ public class TransactionAssemblerTest
     private TransactionAssembler transactionAssembler;
 
     @Before
-    public void initializeTests()
+    public void initializeTransactionAssembler()
     {
         transactionAssembler = new TransactionAssembler();
-        Clock clock = Clock.fixed(SOME_DATE, ZoneId.systemDefault());
     }
 
     @Test
