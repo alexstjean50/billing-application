@@ -137,7 +137,7 @@ public class BillServiceTest
         BillCreationRequest billCreationRequest = createBillCreationRequest();
         this.billService.createBill(billCreationRequest);
 
-        verify(this.itemRequestAssembler, times(billCreationRequest.itemRequests.size())).toDomainModel(any(ItemRequest.class));
+        verify(this.itemRequestAssembler, times(1)).toDomainModel(anyList());
     }
 
     @Test
