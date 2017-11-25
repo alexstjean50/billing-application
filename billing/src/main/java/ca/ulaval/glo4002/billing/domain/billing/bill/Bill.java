@@ -168,11 +168,6 @@ public class Bill implements Comparable<Bill>
         return this.billNumber == billNumber;
     }
 
-    public boolean isSaved()
-    {
-        return billId != Identity.EMPTY;
-    }
-
     @Override
     public int compareTo(Bill that)
     {

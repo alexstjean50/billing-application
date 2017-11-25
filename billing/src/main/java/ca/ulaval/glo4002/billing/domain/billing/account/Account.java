@@ -112,11 +112,6 @@ public class Account
         allocate();
     }
 
-    public boolean isSaved()
-    {
-        return accountId != Identity.EMPTY;
-    }
-
     public void allocate()
     {
         this.allocationStrategy.allocate(this.bills, this.payments);

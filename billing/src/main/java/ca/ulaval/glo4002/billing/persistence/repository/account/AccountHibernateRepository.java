@@ -4,7 +4,6 @@ import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.persistence.assembler.account.AccountAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AccountEntity;
-import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.persistence.manager.HibernateQueryHelper;
 import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
@@ -41,16 +40,19 @@ public class AccountHibernateRepository implements AccountRepository
     @Override
     public synchronized void save(Account account)
     {
-        if (account.isSaved())
-        {
-            accountsByClientIdCache.put(account.getClientId(), account);
-            account.getBills()
-                    .stream()
-                    .filter(Bill::isSaved)
-                    .forEach(bill -> accountsByBillNumberCache.put(bill.getBillNumber(), account));
-        }
         AccountEntity accountEntity = this.accountAssembler.toPersistenceModel(account);
         this.hibernateQueryHelper.save(accountEntity);
+
+        updateCache(account.getClientId());
+    }
+
+    private void updateCache(long clientId)
+    {
+
+        Account account = findByClientIdInDatabase(clientId);
+        accountsByClientIdCache.put(clientId, account);
+        account.getBills()
+                .forEach(bill -> accountsByBillNumberCache.put(bill.getBillNumber(), account));
     }
 
     @Override
