@@ -3,6 +3,8 @@ package ca.ulaval.glo4002.billing.resource;
 import ca.ulaval.glo4002.billing.persistence.repository.ClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
+import ca.ulaval.glo4002.billing.service.assembler.BillServiceAssembler;
+import ca.ulaval.glo4002.billing.service.assembler.TransactionServiceAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
@@ -10,8 +12,6 @@ import ca.ulaval.glo4002.billing.service.dto.request.validation.RequestValidator
 import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillResponse;
-import ca.ulaval.glo4002.billing.service.factory.BillServiceFactory;
-import ca.ulaval.glo4002.billing.service.factory.TransactionServiceFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -31,8 +31,8 @@ public class BillResource
 
     public BillResource()
     {
-        this.transactionService = new TransactionServiceFactory().create();
-        this.billService = new BillServiceFactory().create();
+        this.transactionService = new TransactionServiceAssembler().create();
+        this.billService = new BillServiceAssembler().create();
     }
 
     @POST

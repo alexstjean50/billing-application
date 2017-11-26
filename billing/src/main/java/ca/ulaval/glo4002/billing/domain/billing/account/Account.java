@@ -1,6 +1,7 @@
 package ca.ulaval.glo4002.billing.domain.billing.account;
 
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
+import ca.ulaval.glo4002.billing.domain.billing.bill.BillNotYetAcceptedException;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
@@ -64,7 +65,7 @@ public class Account
 
     public void cancelBill(long billNumber)
     {
-        Bill bill = findBillByNumber(billNumber);
+        Bill bill = findAcceptedBillByNumber(billNumber);
         bill.cancel();
         this.payments.forEach(payment -> payment.removeAllocations(billNumber));
         allocate();
@@ -78,6 +79,14 @@ public class Account
                 .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
     }
 
+    private Bill findAcceptedBillByNumber(long billNumber)
+    {
+        return this.bills.stream()
+                .filter(bill -> bill.isEqualBillNumber(billNumber) && bill.isAccepted())
+                .findFirst()
+                .orElseThrow(() -> new BillNotYetAcceptedException("Bill not yet accepted or already cancelled."));
+    }
+
     public BigDecimal retrieveBillAmount(long billNumber)
     {
         return findBillByNumber(billNumber)
@@ -88,13 +97,15 @@ public class Account
     public void addPayment(Payment payment)
     {
         this.payments.add(payment);
+        allocate();
     }
 
-    public void acceptBill(long billNumber, Instant acceptedDate)
+    public Bill acceptBill(long billNumber, Instant acceptedDate)
     {
-        Bill billAccepted = this.findBillByNumber(billNumber);
-        billAccepted.accept(acceptedDate);
+        Bill acceptedBill = this.findBillByNumber(billNumber);
+        acceptedBill.accept(acceptedDate);
         allocate();
+        return acceptedBill;
     }
 
     public void applyDiscount(long billNumber, Discount discount)
@@ -107,12 +118,11 @@ public class Account
         }
 
         bill.addDiscount(discount);
-        bill.removeAllAllocations();
         this.payments.forEach(payment -> payment.removeAllocations(billNumber));
         allocate();
     }
 
-    public void allocate()
+    private void allocate()
     {
         this.allocationStrategy.allocate(this.bills, this.payments);
     }

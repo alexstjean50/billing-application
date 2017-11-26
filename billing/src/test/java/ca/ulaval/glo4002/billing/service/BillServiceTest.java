@@ -18,6 +18,7 @@ import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillsByClientIdR
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
 import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
+import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,7 +74,7 @@ public class BillServiceTest
     @Before
     public void initializeEmptyBillServiceAndBillCreationRequest()
     {
-        this.billService = new BillService(this.accountRepository, this.productRepository,
+        this.billService = new BillService(this.accountRepository,
                 this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler,
                 this.billAcceptationResponseAssembler, this.billsByClientIdResponseAssembler, this.accountRetriever);
     }

@@ -9,7 +9,6 @@ import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
-import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
@@ -19,19 +18,17 @@ import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResp
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillsByClientIdResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
-import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
+import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class BillService
 {
     private final AccountRepository accountRepository;
-    private final ProductRepository productRepository;
     private final BillRepository billRepository;
     private final ItemRequestAssembler itemRequestAssembler;
     private final BillCreationResponseAssembler billCreationResponseAssembler;
@@ -39,15 +36,14 @@ public class BillService
     private final BillsByClientIdResponseAssembler billsByClientIdResponseAssembler;
     private final AccountRetriever accountRetriever;
 
-    public BillService(AccountRepository accountRepository, ProductRepository productRepository,
+    public BillService(AccountRepository accountRepository,
                        BillRepository billRepository, ItemRequestAssembler itemRequestAssembler,
                        BillCreationResponseAssembler billCreationResponseAssembler,
                        BillAcceptationResponseAssembler billAcceptationResponseAssembler,
-                       BillsByClientIdResponseAssembler billsByClientIdResponseAssembler, AccountRetriever
-                               accountRetriever)
+                       BillsByClientIdResponseAssembler billsByClientIdResponseAssembler,
+                       AccountRetriever accountRetriever)
     {
         this.accountRepository = accountRepository;
-        this.productRepository = productRepository;
         this.billRepository = billRepository;
         this.itemRequestAssembler = itemRequestAssembler;
         this.billCreationResponseAssembler = billCreationResponseAssembler;
@@ -58,7 +54,6 @@ public class BillService
 
     public BillCreationResponse createBill(BillCreationRequest request)
     {
-        validateThatProductIdsExist(request.itemRequests);
         Account account = this.accountRetriever.retrieveClientAccount(request.clientId);
 
         List<Item> items = this.itemRequestAssembler.toDomainModel(request.itemRequests);
@@ -73,14 +68,6 @@ public class BillService
         return this.billCreationResponseAssembler.toResponse(createdBill);
     }
 
-    private void validateThatProductIdsExist(List<ItemRequest> itemRequests)
-    {
-        List<Long> productIds = itemRequests.stream()
-                .map(ItemRequest::getProductId)
-                .collect(Collectors.toList());
-        this.productRepository.findAll(productIds);
-    }
-
     public void cancelBill(long billNumber)
     {
         Account account = this.accountRepository.findByBillNumber(billNumber);
@@ -91,8 +78,7 @@ public class BillService
     public BillAcceptationResponse acceptBill(long billNumber)
     {
         Account account = this.accountRepository.findByBillNumber(billNumber);
-        account.acceptBill(billNumber, Instant.now());
-        Bill bill = account.findBillByNumber(billNumber);
+        Bill bill = account.acceptBill(billNumber, Instant.now());
         this.accountRepository.save(account);
         return this.billAcceptationResponseAssembler.toResponse(bill);
     }

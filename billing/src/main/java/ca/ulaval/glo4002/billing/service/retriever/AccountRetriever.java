@@ -1,4 +1,4 @@
-package ca.ulaval.glo4002.billing.service;
+package ca.ulaval.glo4002.billing.service.retriever;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;

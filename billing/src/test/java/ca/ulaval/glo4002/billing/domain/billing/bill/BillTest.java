@@ -269,16 +269,6 @@ public class BillTest
         assertThat(bill.getAllocations(), is(Collections.emptyList()));
     }
 
-    @Test
-    public void whenClearingAllocations_thenBillShouldRemoveAllAllocations()
-    {
-        Bill bill = createBillWithAllocations();
-
-        bill.removeAllAllocations();
-
-        assertThat(bill.getAllocations(), is(Collections.emptyList()));
-    }
-
     private Bill createEmptyBill()
     {
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_DUE_TERM, new ArrayList<>());
@@ -307,15 +297,6 @@ public class BillTest
     {
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, BillStatus.SUBMITTAL, SOME_DATE,
                 SOME_DUE_TERM, items, new ArrayList<>(), new ArrayList<>());
-    }
-
-    private Bill createBillWithAllocations()
-    {
-        List<Item> items = createItems();
-        Bill bill = createAcceptedBillWithItems(items);
-        bill.addAllocation(createAnAllocation());
-        bill.addAllocation(createAnotherAllocation());
-        return bill;
     }
 
     private Allocation createAnAllocation()

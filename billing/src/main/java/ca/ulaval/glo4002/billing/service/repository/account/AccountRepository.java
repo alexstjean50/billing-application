@@ -16,5 +16,5 @@ public interface AccountRepository
 
     Account findByBillNumber(long billNumber);
 
-    Map<Long,List<Bill>> retrieveFilteredBillsOfClients(Optional<Long> clientId, Optional<BillStatusParameter> status);
+    Map<Long, List<Bill>> retrieveFilteredBillsOfClients(Optional<Long> clientId, Optional<BillStatusParameter> status);
 }

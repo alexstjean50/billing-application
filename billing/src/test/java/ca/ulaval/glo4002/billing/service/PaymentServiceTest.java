@@ -1,17 +1,18 @@
 package ca.ulaval.glo4002.billing.service;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
-import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.PaymentMethodSource;
 import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.dto.request.PaymentCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.PaymentMethod;
+import ca.ulaval.glo4002.billing.service.dto.request.assembler.PaymentAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.PaymentCreationResponse;
+import ca.ulaval.glo4002.billing.service.dto.response.assembler.PaymentCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
-import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 import ca.ulaval.glo4002.billing.service.repository.payment.PaymentRepository;
+import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,9 +39,6 @@ public class PaymentServiceTest
     private static final PaymentMethod SOME_PAYMENT_METHOD = new PaymentMethod();
     private static final long SOME_CLIENT_ID = 42;
     private static final BigDecimal SOME_AMOUNT = BigDecimal.valueOf(42.42);
-    private static final Client SOME_CLIENT = new Client(SOME_CLIENT_ID, Instant.now(),
-            DueTerm.IMMEDIATE);
-    private static final long SOME_OTHER_CLIENT_ID = SOME_CLIENT_ID + 123;
     private PaymentService paymentService;
     @Mock
     private Account account;
@@ -49,9 +47,11 @@ public class PaymentServiceTest
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
-    private ClientRepository clientRepository;
+    private AccountRetriever accountRetriever;
     @Mock
-    private AccountFactory accountFactory;
+    private PaymentAssembler paymentAssembler;
+    @Mock
+    private PaymentCreationResponseAssembler paymentCreationResponseAssembler;
 
     @BeforeClass
     public static void initializePaymentMethod()
@@ -64,22 +64,7 @@ public class PaymentServiceTest
     public void initializePaymentService()
     {
         this.paymentService = new PaymentService(this.accountRepository, this.paymentRepository, this
-                .clientRepository, this.accountFactory);
-    }
-
-    @Test
-    public void givenClientIdWithoutAccount_whenReceivePayment_thenShouldCreateAccount()
-    {
-        given(this.accountRepository.findByClientId(SOME_OTHER_CLIENT_ID))
-                .willThrow(new AccountClientNotFoundException(String.valueOf(SOME_OTHER_CLIENT_ID)));
-        given(this.clientRepository.findById(SOME_OTHER_CLIENT_ID)).willReturn(SOME_CLIENT);
-        given(this.accountFactory.create(SOME_CLIENT)).willReturn(this.account);
-        PaymentCreationRequest paymentCreationRequest = PaymentCreationRequest
-                .create(SOME_OTHER_CLIENT_ID, SOME_AMOUNT, SOME_PAYMENT_METHOD);
-
-        this.paymentService.createPayment(paymentCreationRequest);
-
-        verify(this.accountFactory).create(SOME_CLIENT);
+                .paymentAssembler, this.paymentCreationResponseAssembler, this.accountRetriever);
     }
 
     @Test
@@ -104,16 +89,6 @@ public class PaymentServiceTest
         long responsePaymentId = paymentCreationResponse.id;
 
         assertEquals(expectedPaymentNumber, responsePaymentId);
-    }
-
-    @Test
-    public void whenReceivePayment_thenTriesToAllocateIt()
-    {
-        setAccountRepositoryBehavior();
-
-        this.paymentService.createPayment(createPaymentCreationRequest());
-
-        verify(this.account, atLeastOnce()).allocate();
     }
 
     @Test

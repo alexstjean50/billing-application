@@ -1,10 +1,10 @@
-package ca.ulaval.glo4002.billing.service.factory;
+package ca.ulaval.glo4002.billing.service.assembler;
 
 import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.TransactionService;
 import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 
-public class TransactionServiceFactory
+public class TransactionServiceAssembler
 {
     public TransactionService create()
     {

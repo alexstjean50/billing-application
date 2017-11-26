@@ -9,9 +9,7 @@ import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneId;
 
 import static org.junit.Assert.assertEquals;
 
@@ -129,7 +127,8 @@ public class TransactionAssemblerTest
 
         Transaction result = this.transactionAssembler.toDomainModel(transactionEntity);
 
-        assertEquals(transactionEntity.getAmount(), result.getAmount().asBigDecimal());
+        assertEquals(transactionEntity.getAmount(), result.getAmount()
+                .asBigDecimal());
     }
 
     @Test
@@ -149,7 +148,8 @@ public class TransactionAssemblerTest
 
         Transaction result = this.transactionAssembler.toDomainModel(transactionEntity);
 
-        assertEquals(transactionEntity.getBalance(), result.getBalance().asBigDecimal());
+        assertEquals(transactionEntity.getBalance(), result.getBalance()
+                .asBigDecimal());
     }
 
     private Transaction createATransaction()

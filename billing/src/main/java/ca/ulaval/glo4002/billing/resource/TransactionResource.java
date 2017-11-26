@@ -1,9 +1,9 @@
 package ca.ulaval.glo4002.billing.resource;
 
 import ca.ulaval.glo4002.billing.service.TransactionService;
+import ca.ulaval.glo4002.billing.service.assembler.TransactionServiceAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionEntryResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionsResponse;
-import ca.ulaval.glo4002.billing.service.factory.TransactionServiceFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.*;
@@ -20,7 +20,7 @@ public class TransactionResource
 
     public TransactionResource()
     {
-        this.transactionService = new TransactionServiceFactory().create();
+        this.transactionService = new TransactionServiceAssembler().create();
     }
 
     @GET
@@ -35,7 +35,8 @@ public class TransactionResource
         Optional<String> optionalEndMonth = Optional.ofNullable(endMonth);
         Optional<Long> optionalYear = Optional.ofNullable(year);
 
-        List<TransactionEntryResponse> transactionEntryResponses = this.transactionService.retrieveTransactions(optionalStartMonth, optionalEndMonth, optionalYear);
+        List<TransactionEntryResponse> transactionEntryResponses = this.transactionService.retrieveTransactions
+                (optionalStartMonth, optionalEndMonth, optionalYear);
 
         return new TransactionsResponse(transactionEntryResponses);
     }

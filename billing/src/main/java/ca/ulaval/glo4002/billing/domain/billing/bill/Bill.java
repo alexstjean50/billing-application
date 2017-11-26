@@ -156,9 +156,10 @@ public class Bill implements Comparable<Bill>
                     "bill.");
         }
         this.discounts.add(discount);
+        removeAllAllocations();
     }
 
-    public void removeAllAllocations()
+    private void removeAllAllocations()
     {
         this.allocations.clear();
     }

@@ -1,8 +1,7 @@
-package ca.ulaval.glo4002.billing.service.factory;
+package ca.ulaval.glo4002.billing.service.assembler;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
-import ca.ulaval.glo4002.billing.service.AccountRetriever;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.*;
@@ -10,8 +9,10 @@ import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
 import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
+import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
+import ca.ulaval.glo4002.billing.service.validator.ProductValidator;
 
-public class BillServiceFactory
+public class BillServiceAssembler
 {
     public BillService create()
     {
@@ -19,7 +20,9 @@ public class BillServiceFactory
         AccountRepository accountRepository = ServiceLocator.getService(ServiceLocator.ACCOUNT_REPOSITORY);
         ProductRepository productRepository = ServiceLocator.getService(ServiceLocator.PRODUCT_REPOSITORY);
         BillRepository billRepository = ServiceLocator.getService(ServiceLocator.BILL_REPOSITORY);
-        ItemRequestAssembler itemRequestAssembler = new ItemRequestAssembler();
+
+        ProductValidator productValidator = new ProductValidator(productRepository);
+        ItemRequestAssembler itemRequestAssembler = new ItemRequestAssembler(productValidator);
         BillCreationResponseAssembler billCreationResponseAssembler = new BillCreationResponseAssembler();
         BillAcceptationResponseAssembler billAcceptationResponseAssembler = new BillAcceptationResponseAssembler();
         ItemResponseAssembler itemResponseAssembler = new ItemResponseAssembler();
@@ -29,7 +32,7 @@ public class BillServiceFactory
         AccountRetriever accountRetriever = new AccountRetriever(clientRepository, accountRepository, new
                 AccountFactory());
 
-        return new BillService(accountRepository, productRepository, billRepository,
+        return new BillService(accountRepository, billRepository,
                 itemRequestAssembler, billCreationResponseAssembler, billAcceptationResponseAssembler,
                 billsByClientIdResponseAssembler, accountRetriever);
     }

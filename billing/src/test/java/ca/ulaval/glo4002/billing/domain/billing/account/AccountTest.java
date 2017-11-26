@@ -194,19 +194,6 @@ public class AccountTest
     }
 
     @Test
-    public void givenAnAccountWithABill_whenApplyingDiscountOnTheBill_thenBillShouldRemoveAllItsAllocations()
-    {
-        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
-        given(this.bill.isAccepted()).willReturn(true);
-        Account account = createAccountWithABill(this.bill);
-
-        Discount discountToApply = Discount.create(SOME_DISCOUNT_AMOUNT, SOME_DESCRIPTION);
-        account.applyDiscount(SOME_BILL_NUMBER, discountToApply);
-
-        verify(this.bill).removeAllAllocations();
-    }
-
-    @Test
     public void
     givenAnAccountWithABillAndPayments_whenApplyingDiscountOnTheBill_thenRelatedPaymentsShouldUnallocate()
     {
