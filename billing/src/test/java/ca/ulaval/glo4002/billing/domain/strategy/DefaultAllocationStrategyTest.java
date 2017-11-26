@@ -10,6 +10,7 @@ import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
 import ca.ulaval.glo4002.billing.domain.billing.payment.PaymentMethod;
 import ca.ulaval.glo4002.billing.domain.billing.payment.PaymentMethodSource;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import org.junit.Test;
 

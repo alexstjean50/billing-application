@@ -5,14 +5,19 @@ import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
 import ca.ulaval.glo4002.billing.service.validator.ProductValidator;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ItemRequestAssemblerTest
 {
     private static final int SOME_QUANTITY = 4;
@@ -21,6 +26,8 @@ public class ItemRequestAssemblerTest
     private static final BigDecimal SOME_PRICE = BigDecimal.valueOf(62);
     @Mock
     private ProductValidator productValidator;
+    @Mock
+    private ItemRequest itemRequest;
     private ItemRequestAssembler itemAssembler;
 
     @Before
@@ -36,7 +43,9 @@ public class ItemRequestAssemblerTest
 
         List<Item> conversionResults = this.itemAssembler.toDomainModel(someItemRequests);
 
-        assertEquals(someItemRequests.get(0).getProductId(), conversionResults.get(0).getProductId());
+        assertEquals(someItemRequests.get(0)
+                .getProductId(), conversionResults.get(0)
+                .getProductId());
     }
 
     @Test
@@ -46,7 +55,9 @@ public class ItemRequestAssemblerTest
 
         List<Item> conversionResults = this.itemAssembler.toDomainModel(someItemRequests);
 
-        assertEquals(someItemRequests.get(0).getQuantity(), conversionResults.get(0).getQuantity());
+        assertEquals(someItemRequests.get(0)
+                .getQuantity(), conversionResults.get(0)
+                .getQuantity());
     }
 
     @Test
@@ -56,7 +67,9 @@ public class ItemRequestAssemblerTest
 
         List<Item> conversionResults = this.itemAssembler.toDomainModel(someItemRequests);
 
-        assertEquals(someItemRequests.get(0).getNote(), conversionResults.get(0).getNote());
+        assertEquals(someItemRequests.get(0)
+                .getNote(), conversionResults.get(0)
+                .getNote());
     }
 
     @Test
@@ -66,8 +79,21 @@ public class ItemRequestAssemblerTest
 
         List<Item> conversionResults = this.itemAssembler.toDomainModel(someItemRequests);
 
-        assertEquals(someItemRequests.get(0).getPrice(), conversionResults.get(0).getUnitPrice()
+        assertEquals(someItemRequests.get(0)
+                .getPrice(), conversionResults.get(0)
+                .getUnitPrice()
                 .asBigDecimal());
+    }
+
+    @Test
+    public void whenConvertingItems_thenShouldValidateItems()
+    {
+        List<ItemRequest> itemRequests = Collections.nCopies(3, this.itemRequest);
+        given(this.itemRequest.getProductId()).willReturn(SOME_PRODUCT_ID);
+
+        this.itemAssembler.toDomainModel(itemRequests);
+
+        verify(this.productValidator).validateThatProductsExist(itemRequests);
     }
 
     private List<ItemRequest> createSomeItemRequests()

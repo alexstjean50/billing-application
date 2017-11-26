@@ -3,11 +3,9 @@ package ca.ulaval.glo4002.billing.domain.billing.account;
 import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
-import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.domain.strategy.AllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 import org.junit.Test;
@@ -16,7 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,10 +28,8 @@ import static org.mockito.Mockito.*;
 public class AccountTest
 {
     private static final Payment SOME_PAYMENT = mock(Payment.class);
-    private static final Optional<DueTerm> SOME_DUE_TERM = Optional.of(DueTerm.IMMEDIATE);
     private static final Payment SOME_OTHER_PAYMENT = mock(Payment.class);
     private static final Instant SOME_DATE = Instant.EPOCH;
-    private static final List<Item> SOME_ITEMS = new ArrayList<>();
     private static final long SOME_BILL_NUMBER = 42;
     private static final Money SOME_DISCOUNT_AMOUNT = Money.valueOf(4.2);
     private static final String SOME_DESCRIPTION = "TheFallen";
@@ -40,23 +39,13 @@ public class AccountTest
     private AllocationStrategy allocationStrategy;
 
     @Test
-    public void givenABillWithEmptyDueTerm_whenCreatingTheBill_thenCreatedBillShouldHaveClientDefaultDueTerm()
-    {
-        Account account = createEmptyAccount();
-
-        account.createBill(SOME_BILL_NUMBER, SOME_DATE, Optional.empty(), SOME_ITEMS);
-        Bill bill = account.findBillByNumber(SOME_BILL_NUMBER);
-
-        assertEquals(account.getClient()
-                .getDefaultTerm(), bill.getDueTerm());
-    }
-
-    @Test
     public void whenCreatingABill_thenBillShouldBeAddedToAccount()
     {
         Account account = createEmptyAccount();
 
-        account.createBill(SOME_BILL_NUMBER, SOME_DATE, SOME_DUE_TERM, SOME_ITEMS);
+        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
+
+        account.addBill(this.bill);
         Bill bill = account.findBillByNumber(SOME_BILL_NUMBER);
 
         assertTrue(account.getBills()
@@ -130,6 +119,7 @@ public class AccountTest
     public void givenAnAccountWithABill_whenCancellingTheBill_thenPaymentsShouldRemoveAllocationsRelatedToBill()
     {
         given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
+        given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithPayments(this.bill, Collections.singletonList(SOME_PAYMENT));
 
         account.cancelBill(SOME_BILL_NUMBER);
@@ -142,6 +132,7 @@ public class AccountTest
     public void givenAnAccountWithABill_whenCancellingTheBill_thenBillShouldBeCanceled()
     {
         given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
+        given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         account.cancelBill(SOME_BILL_NUMBER);
@@ -153,6 +144,7 @@ public class AccountTest
     public void givenAnAccountWithABill_whenCancellingTheBill_thenShouldReallocate()
     {
         given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
+        given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
         account.cancelBill(SOME_BILL_NUMBER);

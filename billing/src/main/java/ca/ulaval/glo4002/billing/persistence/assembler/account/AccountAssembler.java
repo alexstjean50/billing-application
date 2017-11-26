@@ -4,7 +4,7 @@ import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.domain.strategy.DefaultAllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.assembler.bill.BillAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.payment.PaymentAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AccountEntity;

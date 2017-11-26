@@ -1,7 +1,7 @@
 package ca.ulaval.glo4002.billing.service.retriever;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
-import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
@@ -11,14 +11,16 @@ public class AccountRetriever
 {
     private final ClientRepository clientRepository;
     private final AccountRepository accountRepository;
-    private final AccountFactory accountFactory;
+    private final DomainAccountAssembler domainAccountAssembler;
 
-    public AccountRetriever(ClientRepository clientRepository, AccountRepository accountRepository, AccountFactory
-            accountFactory)
+    public AccountRetriever(ClientRepository clientRepository, AccountRepository accountRepository,
+                            DomainAccountAssembler
+
+            domainAccountAssembler)
     {
         this.clientRepository = clientRepository;
         this.accountRepository = accountRepository;
-        this.accountFactory = accountFactory;
+        this.domainAccountAssembler = domainAccountAssembler;
     }
 
     public Account retrieveClientAccount(long clientId)
@@ -31,7 +33,7 @@ public class AccountRetriever
         catch (AccountClientNotFoundException exception)
         {
             Client client = this.clientRepository.findById(clientId);
-            account = this.accountFactory.create(client);
+            account = this.domainAccountAssembler.create(client);
         }
         return account;
     }

@@ -1,4 +1,4 @@
-package ca.ulaval.glo4002.billing.domain.strategy;
+package ca.ulaval.glo4002.billing.domain.strategy.allocation;
 
 import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;

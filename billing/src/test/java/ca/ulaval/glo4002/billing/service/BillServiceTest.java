@@ -1,23 +1,21 @@
 package ca.ulaval.glo4002.billing.service;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
-import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.BillStatus;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainBillAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
-import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillsByClientIdResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
-import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
-import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +36,6 @@ public class BillServiceTest
 {
     private static final long SOME_CLIENT_ID = 0;
     private static final Instant SOME_CREATION_DATE = Instant.parse("2017-08-21T16:59:20.142Z");
-    private static final long SOME_PRODUCT_ID = 42;
     private static final DueTerm SOME_DUE_TERM = DueTerm.IMMEDIATE;
     private static final long SOME_BILL_NUMBER = 1111;
     private static final BigDecimal SOME_DISCOUNT_AMOUNT = BigDecimal.valueOf(7.42);
@@ -50,33 +47,29 @@ public class BillServiceTest
     @Mock
     private AccountRepository accountRepository;
     @Mock
-    private ProductRepository productRepository;
-    @Mock
-    private BillRepository billRepository;
-    @Mock
-    private ItemRequestAssembler itemRequestAssembler;
-    @Mock
     private BillCreationResponseAssembler billCreationResponseAssembler;
     @Mock
     private BillAcceptationResponseAssembler billAcceptationResponseAssembler;
     @Mock
     private BillsByClientIdResponseAssembler billsByClientIdResponseAssembler;
     @Mock
-    private AccountFactory accountFactory;
+    private DomainAccountAssembler domainAccountAssembler;
+    @Mock
+    private DomainBillAssembler domainBillAssembler;
     @Mock
     private Account account;
     @Mock
-    private ItemRequest itemRequest;
-    @Mock
     private AccountRetriever accountRetriever;
+    @Mock
+    private ItemRequest itemRequest;
     private BillService billService;
 
     @Before
     public void initializeEmptyBillServiceAndBillCreationRequest()
     {
-        this.billService = new BillService(this.accountRepository,
-                this.billRepository, this.itemRequestAssembler, this.billCreationResponseAssembler,
-                this.billAcceptationResponseAssembler, this.billsByClientIdResponseAssembler, this.accountRetriever);
+        this.billService = new BillService(this.accountRepository, this.domainBillAssembler,
+                this.billCreationResponseAssembler, this.billAcceptationResponseAssembler,
+                this.billsByClientIdResponseAssembler, this.accountRetriever);
     }
 
     @Test
@@ -88,29 +81,6 @@ public class BillServiceTest
         this.billService.createBill(billCreationRequest);
 
         verify(this.accountRetriever).retrieveClientAccount(SOME_CLIENT_ID);
-    }
-
-    @Test
-    public void whenCreatingBill_thenValidateItems()
-    {
-        this.setSuccessfulBehaviorsForCreationRequest();
-        BillCreationRequest billCreationRequest = createBillCreationRequest();
-        given(this.itemRequest.getProductId()).willReturn(SOME_PRODUCT_ID);
-
-        this.billService.createBill(billCreationRequest);
-
-        verify(this.productRepository).findAll(Collections.nCopies(billCreationRequest.itemRequests.size(),
-                SOME_PRODUCT_ID));
-    }
-
-    @Test
-    public void whenCreatingBill_thenAllItemRequestsAreConvertedToItems()
-    {
-        this.setSuccessfulBehaviorsForCreationRequest();
-        BillCreationRequest billCreationRequest = createBillCreationRequest();
-        this.billService.createBill(billCreationRequest);
-
-        verify(this.itemRequestAssembler, times(1)).toDomainModel(anyList());
     }
 
     @Test
@@ -249,7 +219,6 @@ public class BillServiceTest
     private void setSuccessfulBehaviorsForAcceptationRequest()
     {
         given(this.accountRepository.findByBillNumber(SOME_BILL_NUMBER)).willReturn(this.account);
-        given(this.account.findBillByNumber(SOME_BILL_NUMBER)).willReturn(this.createEmptyBill());
     }
 
     private boolean hasTheSameDiscountInfo(DiscountApplicationRequest discountApplicationRequest, Discount discount)

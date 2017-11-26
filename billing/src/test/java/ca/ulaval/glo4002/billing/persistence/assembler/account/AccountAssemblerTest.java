@@ -4,7 +4,7 @@ import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.domain.strategy.AllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.assembler.bill.BillAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.payment.PaymentAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AccountEntity;
@@ -14,6 +14,9 @@ import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +29,7 @@ import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AccountAssemblerTest
 {
     private static final long SOME_ID = 0;
@@ -35,7 +39,6 @@ public class AccountAssemblerTest
     private static final Identity SOME_ACCOUNT_ID = new Identity(SOME_ACCOUNT_ID_VALUE);
     private static final long SOME_CLIENT_ID = 0;
     private static final long SOME_OTHER_CLIENT_ID = SOME_CLIENT_ID + 1;
-    private static final AllocationStrategy SOME_ALLOCATION_STRATEGY = null;
     private static final int SOME_COUNT = 5;
     private static final List<BillEntity> SOME_BILL_ENTITIES = new ArrayList<>();
     private static final List<Payment> SOME_PAYMENTS = new ArrayList<>();
@@ -45,6 +48,8 @@ public class AccountAssemblerTest
     private static final Payment SOME_PAYMENT = mock(Payment.class);
     private static final PaymentEntity SOME_PAYMENT_ENTITY = mock(PaymentEntity.class);
     private static final Client SOME_CLIENT = mock(Client.class);
+    @Mock
+    private AllocationStrategy SOME_ALLOCATION_STRATEGY;
     private AccountAssembler accountAssembler;
 
     @Before

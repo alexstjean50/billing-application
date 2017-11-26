@@ -1,8 +1,9 @@
 package ca.ulaval.glo4002.billing.service.assembler;
 
-import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.BillService;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainBillAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.*;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
@@ -30,10 +31,10 @@ public class BillServiceAssembler
         BillsByClientIdResponseAssembler billsByClientIdResponseAssembler =
                 new BillsByClientIdResponseAssembler(billResponseAssembler);
         AccountRetriever accountRetriever = new AccountRetriever(clientRepository, accountRepository, new
-                AccountFactory());
+                DomainAccountAssembler());
+        DomainBillAssembler domainBillAssembler = new DomainBillAssembler(billRepository, itemRequestAssembler);
 
-        return new BillService(accountRepository, billRepository,
-                itemRequestAssembler, billCreationResponseAssembler, billAcceptationResponseAssembler,
-                billsByClientIdResponseAssembler, accountRetriever);
+        return new BillService(accountRepository, domainBillAssembler, billCreationResponseAssembler,
+                billAcceptationResponseAssembler, billsByClientIdResponseAssembler, accountRetriever);
     }
 }

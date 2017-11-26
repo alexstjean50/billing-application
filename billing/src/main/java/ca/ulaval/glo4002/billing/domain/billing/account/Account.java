@@ -7,8 +7,8 @@ import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.domain.strategy.AllocationStrategy;
-import ca.ulaval.glo4002.billing.domain.strategy.DefaultAllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 
@@ -54,13 +54,9 @@ public class Account
         return new Account(identity, client, allocationStrategy, payments, bills);
     }
 
-    public Bill createBill(long billNumber, Instant creationDate, Optional<DueTerm> dueTerm, List<Item> items)
+    public void addBill(Bill bill)
     {
-        DueTerm appliedDueTerm = dueTerm.orElseGet(this.client::getDefaultTerm);
-        Bill bill = Bill.create(billNumber, creationDate, appliedDueTerm, items);
         this.bills.add(bill);
-
-        return bill;
     }
 
     public void cancelBill(long billNumber)

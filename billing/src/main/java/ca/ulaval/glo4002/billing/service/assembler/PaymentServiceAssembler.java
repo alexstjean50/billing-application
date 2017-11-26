@@ -1,9 +1,9 @@
 package ca.ulaval.glo4002.billing.service.assembler;
 
-import ca.ulaval.glo4002.billing.domain.billing.account.AccountFactory;
 import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.PaymentService;
-import ca.ulaval.glo4002.billing.service.dto.request.assembler.PaymentAssembler;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainPaymentAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.PaymentCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
@@ -17,12 +17,13 @@ public class PaymentServiceAssembler
         AccountRepository accountRepository = ServiceLocator.getService(ServiceLocator.ACCOUNT_REPOSITORY);
         PaymentRepository paymentRepository = ServiceLocator.getService(ServiceLocator.PAYMENT_REPOSITORY);
         ClientRepository clientRepository = ServiceLocator.getService(ServiceLocator.CLIENT_REPOSITORY);
-        AccountFactory accountFactory = new AccountFactory();
-        PaymentAssembler paymentAssembler = new PaymentAssembler();
+        DomainAccountAssembler domainAccountAssembler = new DomainAccountAssembler();
+        DomainPaymentAssembler domainPaymentAssembler = new DomainPaymentAssembler(paymentRepository);
         PaymentCreationResponseAssembler paymentCreationResponseAssembler = new PaymentCreationResponseAssembler();
-        AccountRetriever accountRetriever = new AccountRetriever(clientRepository, accountRepository, accountFactory);
+        AccountRetriever accountRetriever = new AccountRetriever(clientRepository, accountRepository,
+                domainAccountAssembler);
 
-        return new PaymentService(accountRepository, paymentRepository, paymentAssembler,
+        return new PaymentService(accountRepository, domainPaymentAssembler,
                 paymentCreationResponseAssembler, accountRetriever);
     }
 }

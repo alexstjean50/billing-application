@@ -4,12 +4,10 @@ import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
-import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainBillAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.BillStatusParameter;
 import ca.ulaval.glo4002.billing.service.dto.request.DiscountApplicationRequest;
-import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillResponse;
@@ -17,7 +15,6 @@ import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationR
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillsByClientIdResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
-import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 
 import java.math.BigDecimal;
@@ -29,23 +26,21 @@ import java.util.Optional;
 public class BillService
 {
     private final AccountRepository accountRepository;
-    private final BillRepository billRepository;
-    private final ItemRequestAssembler itemRequestAssembler;
+    private final DomainBillAssembler domainBillAssembler;
     private final BillCreationResponseAssembler billCreationResponseAssembler;
     private final BillAcceptationResponseAssembler billAcceptationResponseAssembler;
     private final BillsByClientIdResponseAssembler billsByClientIdResponseAssembler;
     private final AccountRetriever accountRetriever;
 
     public BillService(AccountRepository accountRepository,
-                       BillRepository billRepository, ItemRequestAssembler itemRequestAssembler,
+                       DomainBillAssembler domainBillAssembler,
                        BillCreationResponseAssembler billCreationResponseAssembler,
                        BillAcceptationResponseAssembler billAcceptationResponseAssembler,
                        BillsByClientIdResponseAssembler billsByClientIdResponseAssembler,
                        AccountRetriever accountRetriever)
     {
         this.accountRepository = accountRepository;
-        this.billRepository = billRepository;
-        this.itemRequestAssembler = itemRequestAssembler;
+        this.domainBillAssembler = domainBillAssembler;
         this.billCreationResponseAssembler = billCreationResponseAssembler;
         this.billAcceptationResponseAssembler = billAcceptationResponseAssembler;
         this.billsByClientIdResponseAssembler = billsByClientIdResponseAssembler;
@@ -56,12 +51,8 @@ public class BillService
     {
         Account account = this.accountRetriever.retrieveClientAccount(request.clientId);
 
-        List<Item> items = this.itemRequestAssembler.toDomainModel(request.itemRequests);
-
-        long newBillNumber = this.billRepository.retrieveNextBillNumber();
-        Bill createdBill = account.createBill(newBillNumber, request.creationDate,
-                Optional.ofNullable(request.dueTerm)
-                        .map(DueTerm::valueOf), items);
+        Bill createdBill = this.domainBillAssembler.toBill(request, account.getClient());
+        account.addBill(createdBill);
 
         this.accountRepository.save(account);
 
