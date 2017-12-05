@@ -50,18 +50,18 @@ public class TransactionHibernateRepository implements TransactionRepository
     {
         //@formatter:off
         String query =
+        "select " +
+            "BALANCE " +
+        "from " +
+            "TRANSACTION " +
+        "where " +
+            "TRANSACTION_ID = " +
+            "(" +
                 "select " +
-                        "BALANCE " +
-                        "from " +
-                        "TRANSACTION " +
-                        "where " +
-                        "TRANSACTION_ID = " +
-                        "(" +
-                        "select " +
-                        "max(TRANSACTION_ID) " +
-                        "from " +
-                        "TRANSACTION" +
-                        ")";
+                    "max(TRANSACTION_ID) " +
+                "from " +
+                    "TRANSACTION" +
+            ")";
         //@formatter:on
 
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();

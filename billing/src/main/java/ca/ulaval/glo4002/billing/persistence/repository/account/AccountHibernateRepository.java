@@ -69,11 +69,11 @@ public class AccountHibernateRepository implements AccountRepository
             //@formatter:off
             String query =
                     "select " +
-                            "accountEntity " +
-                            "from " +
-                            "AccountEntity accountEntity " +
-                            "where " +
-                            "accountEntity.clientId = :clientId";
+                        "accountEntity " +
+                    "from " +
+                        "AccountEntity accountEntity " +
+                    "where " +
+                        "accountEntity.clientId = :clientId";
             //@formatter:on
             EntityManager entityManager = this.entityManagerFactory.createEntityManager();
             accountEntity = entityManager
@@ -107,12 +107,12 @@ public class AccountHibernateRepository implements AccountRepository
             String query =
                     "select " +
                             "accountEntity " +
-                            "from " +
-                            "AccountEntity accountEntity " +
-                            "join " +
-                            "accountEntity.billEntities bills " +
-                            "where " +
-                            "bills.billNumber = :billNumber";
+                    "from " +
+                        "AccountEntity accountEntity " +
+                    "join " +
+                        "accountEntity.billEntities bills " +
+                    "where " +
+                        "bills.billNumber = :billNumber";
             //@formatter:on
             EntityManager entityManager = this.entityManagerFactory.createEntityManager();
             AccountEntity accountEntity = entityManager
