@@ -1,9 +1,9 @@
 package ca.ulaval.glo4002.billing.service.retriever;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
-import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.persistence.repository.AccountClientNotFoundException;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 
@@ -16,7 +16,7 @@ public class AccountRetriever
     public AccountRetriever(ClientRepository clientRepository, AccountRepository accountRepository,
                             DomainAccountAssembler
 
-            domainAccountAssembler)
+                                    domainAccountAssembler)
     {
         this.clientRepository = clientRepository;
         this.accountRepository = accountRepository;

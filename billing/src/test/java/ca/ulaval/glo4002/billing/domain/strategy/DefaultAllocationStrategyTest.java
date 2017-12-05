@@ -4,7 +4,6 @@ import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.BillStatus;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
@@ -33,7 +32,6 @@ public class DefaultAllocationStrategyTest
     private static final DueTerm SOME_DUE_TERM = DueTerm.DAYS30;
     private static final BillStatus SOME_BILL_STATUS = BillStatus.ACCEPTED;
     private static final BillStatus SOME_OTHER_BILL_STATUS = BillStatus.CANCELLED;
-    private static final List<Discount> SOME_DISCOUNTS = new ArrayList<>();
     private static final Item SOME_ITEM = mock(Item.class);
     private static final Identity SOME_IDENTITY = mock(Identity.class);
     private static final Instant SOME_DATE = Instant.now();
@@ -291,21 +289,21 @@ public class DefaultAllocationStrategyTest
     {
         List<Item> items = this.createItemsWithTotalEqualToBillAmount(amount);
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, items, SOME_DISCOUNTS, new ArrayList<>());
+                SOME_DUE_TERM, items, new ArrayList<>());
     }
 
     private Bill createSubmittal(Money amount)
     {
         List<Item> items = this.createItemsWithTotalEqualToBillAmount(amount);
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_OTHER_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, items, SOME_DISCOUNTS, new ArrayList<>());
+                SOME_DUE_TERM, items, new ArrayList<>());
     }
 
     private Bill createOlderAcceptedBill(Money amount)
     {
         List<Item> items = this.createItemsWithTotalEqualToBillAmount(amount);
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_OLDER_DATE, SOME_BILL_STATUS, SOME_OLDER_DATE,
-                SOME_DUE_TERM, items, SOME_DISCOUNTS, new ArrayList<>());
+                SOME_DUE_TERM, items, new ArrayList<>());
     }
 
     private List<Item> createItemsWithTotalEqualToBillAmount(Money amount)

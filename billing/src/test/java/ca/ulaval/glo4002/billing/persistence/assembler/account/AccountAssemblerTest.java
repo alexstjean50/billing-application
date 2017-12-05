@@ -56,7 +56,8 @@ public class AccountAssemblerTest
     public void createAssemblers()
     {
         ClientRepository clientRepository = mock(ClientRepository.class);
-        given(clientRepository.findById(anyLong())).willAnswer(invocationOnMock -> {
+        given(clientRepository.findById(anyLong())).willAnswer(invocationOnMock ->
+        {
             Client client = mock(Client.class);
             given(client.getId()).willReturn(invocationOnMock.getArgument(0));
             return client;

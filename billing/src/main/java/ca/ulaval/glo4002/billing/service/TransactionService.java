@@ -40,11 +40,6 @@ public class TransactionService
         logTransaction(clientId, TransactionType.INVOICE_CANCELLED, OperationType.DEBIT, amount);
     }
 
-    public void logDiscount(long clientId, BigDecimal amount)
-    {
-        logTransaction(clientId, TransactionType.REBATE, OperationType.DEBIT, amount);
-    }
-
     private void logTransaction(long clientId, TransactionType transactionType, OperationType operationType, BigDecimal
             amount)
     {

@@ -194,7 +194,6 @@ public class EntityManagerFactoryFactory
                 AccountEntity.class,
                 AllocationEntity.class,
                 BillEntity.class,
-                DiscountEntity.class,
                 ItemEntity.class,
                 PaymentEntity.class,
                 PaymentMethodEntity.class

@@ -1,13 +1,10 @@
 package ca.ulaval.glo4002.billing.domain.billing.account;
 
-import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
 import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
-import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -28,11 +25,8 @@ import static org.mockito.Mockito.*;
 public class AccountTest
 {
     private static final Payment SOME_PAYMENT = mock(Payment.class);
-    private static final Payment SOME_OTHER_PAYMENT = mock(Payment.class);
     private static final Instant SOME_DATE = Instant.EPOCH;
     private static final long SOME_BILL_NUMBER = 42;
-    private static final Money SOME_DISCOUNT_AMOUNT = Money.valueOf(4.2);
-    private static final String SOME_DESCRIPTION = "TheFallen";
     @Mock
     private Bill bill;
     @Mock
@@ -158,59 +152,6 @@ public class AccountTest
         Account account = createEmptyAccount();
 
         account.findBillByNumber(SOME_BILL_NUMBER);
-    }
-
-    @Test
-    public void givenAnAccountWithABill_whenApplyingDiscountOnTheBill_thenDiscountShouldBeApplied()
-    {
-        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
-        given(this.bill.isAccepted()).willReturn(true);
-        Account account = createAccountWithABill(this.bill);
-
-        Discount discountToApply = Discount.create(SOME_DISCOUNT_AMOUNT, SOME_DESCRIPTION);
-        account.applyDiscount(SOME_BILL_NUMBER, discountToApply);
-
-        verify(this.bill).addDiscount(discountToApply);
-    }
-
-    @Test(expected = BillNotFoundException.class)
-    public void
-    givenAnAccountWithABillThatIsNotAccepted_whenApplyingDiscountOnTheBill_thenShouldThrowDomainAccountBillNotFoundException()
-    {
-        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
-        given(this.bill.isAccepted()).willReturn(false);
-        Account account = createAccountWithABill(this.bill);
-
-        Discount discountToApply = Discount.create(SOME_DISCOUNT_AMOUNT, SOME_DESCRIPTION);
-        account.applyDiscount(SOME_BILL_NUMBER, discountToApply);
-    }
-
-    @Test
-    public void
-    givenAnAccountWithABillAndPayments_whenApplyingDiscountOnTheBill_thenRelatedPaymentsShouldUnallocate()
-    {
-        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
-        given(this.bill.isAccepted()).willReturn(true);
-        Account account = createAccountWithPayments(this.bill, Collections.singletonList(SOME_OTHER_PAYMENT));
-
-        Discount discountToApply = Discount.create(SOME_DISCOUNT_AMOUNT, SOME_DESCRIPTION);
-        account.applyDiscount(SOME_BILL_NUMBER, discountToApply);
-
-        account.getPayments()
-                .forEach(payment -> verify(payment).removeAllocations(SOME_BILL_NUMBER));
-    }
-
-    @Test
-    public void givenAnAccountWithABill_whenApplyingDiscountOnTheBill_thenShouldReallocate()
-    {
-        given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);
-        given(this.bill.isAccepted()).willReturn(true);
-        Account account = createAccountWithABill(this.bill);
-
-        Discount discountToApply = Discount.create(SOME_DISCOUNT_AMOUNT, SOME_DESCRIPTION);
-        account.applyDiscount(SOME_BILL_NUMBER, discountToApply);
-
-        verify(this.allocationStrategy).allocate(account.getBills(), account.getPayments());
     }
 
     private Account createEmptyAccount()

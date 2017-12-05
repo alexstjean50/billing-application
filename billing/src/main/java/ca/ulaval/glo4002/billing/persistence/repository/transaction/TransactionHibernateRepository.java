@@ -51,16 +51,16 @@ public class TransactionHibernateRepository implements TransactionRepository
         //@formatter:off
         String query =
                 "select " +
-                    "BALANCE " +
-                "from " +
-                    "TRANSACTION " +
-                "where " +
-                    "TRANSACTION_ID = " +
+                        "BALANCE " +
+                        "from " +
+                        "TRANSACTION " +
+                        "where " +
+                        "TRANSACTION_ID = " +
                         "(" +
-                            "select " +
-                                "max(TRANSACTION_ID) " +
-                            "from " +
-                                "TRANSACTION" +
+                        "select " +
+                        "max(TRANSACTION_ID) " +
+                        "from " +
+                        "TRANSACTION" +
                         ")";
         //@formatter:on
 

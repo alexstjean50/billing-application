@@ -18,13 +18,12 @@ public class Bill implements Comparable<Bill>
     private final Instant creationDate;
     private final DueTerm dueTerm;
     private final List<Item> items;
-    private final List<Discount> discounts;
     private final List<Allocation> allocations;
     private BillStatus status;
     private Instant effectiveDate;
 
     private Bill(Identity billId, long billNumber, Instant creationDate, BillStatus billStatus, Instant effectiveDate,
-                 DueTerm dueTerm, List<Item> items, List<Discount> discounts,
+                 DueTerm dueTerm, List<Item> items,
                  List<Allocation> allocations)
     {
         this.billId = billId;
@@ -34,27 +33,25 @@ public class Bill implements Comparable<Bill>
         this.status = billStatus;
         this.effectiveDate = effectiveDate;
         this.items = items;
-        this.discounts = discounts;
         this.allocations = allocations;
     }
 
     public static Bill create(long billNumber, Instant creationDate, DueTerm dueTerm, List<Item> items)
     {
         return new Bill(Identity.EMPTY, billNumber, creationDate, DEFAULT_BILL_STATUS, null, dueTerm, items,
-                new ArrayList<>(), new ArrayList<>());
+                new ArrayList<>());
     }
 
     public static Bill create(Identity billId, long billNumber, Instant creationDate, DueTerm dueTerm, List<Item> items)
     {
-        return new Bill(billId, billNumber, creationDate, DEFAULT_BILL_STATUS, null, dueTerm, items,
-                new ArrayList<>(), new ArrayList<>());
+        return new Bill(billId, billNumber, creationDate, DEFAULT_BILL_STATUS, null, dueTerm, items, new ArrayList<>());
     }
 
     public static Bill create(Identity billId, long billNumber, Instant creationDate, BillStatus billStatus,
-                              Instant effectiveDate, DueTerm dueTerm, List<Item> items, List<Discount> discounts,
+                              Instant effectiveDate, DueTerm dueTerm, List<Item> items,
                               List<Allocation> allocations)
     {
-        return new Bill(billId, billNumber, creationDate, billStatus, effectiveDate, dueTerm, items, discounts,
+        return new Bill(billId, billNumber, creationDate, billStatus, effectiveDate, dueTerm, items,
                 allocations);
     }
 
@@ -97,13 +94,8 @@ public class Bill implements Comparable<Bill>
 
     public boolean isPaid()
     {
-        Money total = calculateSubTotal();
+        Money total = calculateTotalItemPrice();
         return calculatePaidAmount().isGreaterOrEqualTo(total) && isAccepted();
-    }
-
-    public Money calculateSubTotal()
-    {
-        return calculateTotalItemPrice().subtract(calculateTotalDiscountAmount());
     }
 
     private Money calculatePaidAmount()
@@ -114,18 +106,10 @@ public class Bill implements Comparable<Bill>
                 .orElse(Money.ZERO);
     }
 
-    private Money calculateTotalItemPrice()
+    public Money calculateTotalItemPrice()
     {
         return this.items.stream()
                 .map(Item::calculatePrice)
-                .reduce(Money::add)
-                .orElse(Money.ZERO);
-    }
-
-    private Money calculateTotalDiscountAmount()
-    {
-        return this.discounts.stream()
-                .map(Discount::getAmount)
                 .reduce(Money::add)
                 .orElse(Money.ZERO);
     }
@@ -138,30 +122,12 @@ public class Bill implements Comparable<Bill>
 
     public Money calculateUnpaidBalance()
     {
-        return calculateSubTotal().subtract(calculatePaidAmount());
+        return calculateTotalItemPrice().subtract(calculatePaidAmount());
     }
 
     public void addAllocation(Allocation allocation)
     {
         this.allocations.add(allocation);
-    }
-
-    public void addDiscount(Discount discount)
-    {
-        Money sumOfCurrentDiscounts = calculateTotalDiscountAmount();
-        if (sumOfCurrentDiscounts.add(discount.getAmount())
-                .isGreaterThan(calculateTotalItemPrice()))
-        {
-            throw new InvalidDiscountAmountException("The amount of this discount is higher than the total of the " +
-                    "bill.");
-        }
-        this.discounts.add(discount);
-        removeAllAllocations();
-    }
-
-    private void removeAllAllocations()
-    {
-        this.allocations.clear();
     }
 
     public boolean isEqualBillNumber(long billNumber)
@@ -198,11 +164,6 @@ public class Bill implements Comparable<Bill>
     public List<Item> getItems()
     {
         return this.items;
-    }
-
-    public List<Discount> getDiscounts()
-    {
-        return this.discounts;
     }
 
     public List<Allocation> getAllocations()

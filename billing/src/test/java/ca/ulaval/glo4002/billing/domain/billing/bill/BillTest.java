@@ -4,7 +4,6 @@ import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
-import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -23,8 +22,6 @@ public class BillTest
 {
     private static final long SOME_BILL_NUMBER = 42;
     private static final DueTerm SOME_DUE_TERM = DueTerm.DAYS30;
-    private static final Discount SOME_DISCOUNT = Discount.create(Money.valueOf(37), "Bumblebee");
-    private static final Discount SOME_OTHER_DISCOUNT = Discount.create(Money.valueOf(7), "T-REX?");
     private static final Money SOME_TOTAL = Money.valueOf(42);
     private static final Money SOME_OTHER_TOTAL = Money.valueOf(15);
     private static final Money SOME_ALLOCATED_AMOUNT = Money.valueOf(10);
@@ -41,30 +38,9 @@ public class BillTest
     {
         Bill bill = this.createEmptyBill();
 
-        Money billSubTotal = bill.calculateSubTotal();
+        Money billSubTotal = bill.calculateTotalItemPrice();
 
         assertEquals(Money.ZERO, billSubTotal);
-    }
-
-    @Test
-    public void
-    givenABillWithItemsAndDiscounts_whenCalculatingSubTotal_thenSubTotalShouldBeItemPricesMinusDiscountAmounts()
-    {
-        List<Item> items = createItems();
-        Bill bill = createAcceptedBillWithItems(items);
-        bill.addDiscount(SOME_DISCOUNT);
-        bill.addDiscount(SOME_OTHER_DISCOUNT);
-
-        Money billSubTotal = bill.calculateSubTotal();
-
-        Money expectedTotal = items.stream()
-                .map(Item::calculatePrice)
-                .reduce(Money::add)
-                .orElse(Money.ZERO)
-                .subtract(SOME_DISCOUNT.getAmount()
-                        .add(SOME_OTHER_DISCOUNT.getAmount()));
-
-        assertEquals(expectedTotal, billSubTotal);
     }
 
     @Test
@@ -220,33 +196,10 @@ public class BillTest
         bill.addAllocation(createAnAllocation());
         Money unpaidBalance = bill.calculateUnpaidBalance();
 
-        Money expectedUnpaidBalance = bill.calculateSubTotal()
+        Money expectedUnpaidBalance = bill.calculateTotalItemPrice()
                 .subtract(SOME_ALLOCATED_AMOUNT);
 
         assertEquals(expectedUnpaidBalance, unpaidBalance);
-    }
-
-    @Test
-    public void givenADiscountWhoseAmountIsLesserThanTheItemTotalPrice_whenAdded_thenShouldBeAdded()
-    {
-        Bill bill = createAcceptedBillWithItems(createItems());
-        Discount discountToApply = Discount.create(SOME_IDENTITY, Money.valueOf(12), "Do not" +
-                " read.");
-
-        bill.addDiscount(discountToApply);
-
-        assertThat(bill.getDiscounts(), IsCollectionContaining.hasItem(discountToApply));
-    }
-
-    @Test(expected = InvalidDiscountAmountException.class)
-    public void
-    givenADiscountWhoseAmountIsHigherThanItemTotalPrice_whenAddingTheDiscount_thenShouldThrowAnInvalidDiscountAmountException()
-    {
-        Bill bill = createEmptyBill();
-        Discount discountToApply = Discount.create(SOME_IDENTITY, Money.valueOf(666), "Do " +
-                "not add.");
-
-        bill.addDiscount(discountToApply);
     }
 
     @Test
@@ -284,19 +237,19 @@ public class BillTest
     private Bill createOverdueAcceptedBill(List<Item> items)
     {
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_OVERDUE_CREATION_DATE, BillStatus.ACCEPTED,
-                SOME_OVERDUE_EFFECTIVE_DATE, DueTerm.IMMEDIATE, items, new ArrayList<>(), new ArrayList<>());
+                SOME_OVERDUE_EFFECTIVE_DATE, DueTerm.IMMEDIATE, items, new ArrayList<>());
     }
 
     private Bill createAcceptedBillWithItems(List<Item> items)
     {
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, BillStatus.ACCEPTED, SOME_DATE,
-                SOME_DUE_TERM, items, new ArrayList<>(), new ArrayList<>());
+                SOME_DUE_TERM, items, new ArrayList<>());
     }
 
     private Bill createSubmittalWithItems(List<Item> items)
     {
         return Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, BillStatus.SUBMITTAL, SOME_DATE,
-                SOME_DUE_TERM, items, new ArrayList<>(), new ArrayList<>());
+                SOME_DUE_TERM, items, new ArrayList<>());
     }
 
     private Allocation createAnAllocation()

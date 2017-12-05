@@ -7,7 +7,7 @@ public class BillCreationResponseAssembler
 {
     public BillCreationResponse toResponse(Bill createdBill)
     {
-        return BillCreationResponse.create(createdBill.getBillNumber(), createdBill.calculateSubTotal()
+        return BillCreationResponse.create(createdBill.getBillNumber(), createdBill.calculateTotalItemPrice()
                         .asBigDecimal(),
                 createdBill.getDueTerm()
                         .name());

@@ -36,7 +36,7 @@ public class TransactionEntity implements Serializable
 
     public TransactionEntity(long transactionId, Instant date, TransactionType transactionType, long clientId,
                              OperationType
-            operationType, BigDecimal amount, BigDecimal balance)
+                                     operationType, BigDecimal amount, BigDecimal balance)
     {
         this.transactionId = transactionId;
         this.date = date;

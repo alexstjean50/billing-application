@@ -2,21 +2,16 @@ package ca.ulaval.glo4002.billing.domain.billing.account;
 
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.BillNotYetAcceptedException;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
-import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
 import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
 import ca.ulaval.glo4002.billing.domain.strategy.allocation.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
-import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Account
@@ -86,7 +81,7 @@ public class Account
     public BigDecimal retrieveBillAmount(long billNumber)
     {
         return findBillByNumber(billNumber)
-                .calculateSubTotal()
+                .calculateTotalItemPrice()
                 .asBigDecimal();
     }
 
@@ -102,20 +97,6 @@ public class Account
         acceptedBill.accept(acceptedDate);
         allocate();
         return acceptedBill;
-    }
-
-    public void applyDiscount(long billNumber, Discount discount)
-    {
-        Bill bill = this.findBillByNumber(billNumber);
-
-        if (!bill.isAccepted())
-        {
-            throw new BillNotFoundException("A bill can't be found in an account.", String.valueOf(billNumber));
-        }
-
-        bill.addDiscount(discount);
-        this.payments.forEach(payment -> payment.removeAllocations(billNumber));
-        allocate();
     }
 
     private void allocate()

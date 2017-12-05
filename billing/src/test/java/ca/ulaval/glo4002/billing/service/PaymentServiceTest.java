@@ -2,7 +2,6 @@ package ca.ulaval.glo4002.billing.service;
 
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.domain.billing.payment.PaymentMethodSource;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainPaymentAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.PaymentCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.PaymentMethod;
@@ -11,7 +10,6 @@ import ca.ulaval.glo4002.billing.service.dto.response.assembler.PaymentCreationR
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

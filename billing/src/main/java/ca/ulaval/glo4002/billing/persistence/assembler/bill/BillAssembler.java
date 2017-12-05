@@ -2,12 +2,10 @@ package ca.ulaval.glo4002.billing.persistence.assembler.bill;
 
 import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.persistence.assembler.allocation.AllocationAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AllocationEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.BillEntity;
-import ca.ulaval.glo4002.billing.persistence.entity.DiscountEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.ItemEntity;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 
@@ -17,14 +15,12 @@ import java.util.stream.Collectors;
 public class BillAssembler
 {
     private final ItemAssembler itemAssembler;
-    private final DiscountAssembler discountAssembler;
     private final AllocationAssembler allocationAssembler;
 
-    public BillAssembler(ItemAssembler itemAssembler, DiscountAssembler discountAssembler, AllocationAssembler
+    public BillAssembler(ItemAssembler itemAssembler, AllocationAssembler
             allocationAssembler)
     {
         this.itemAssembler = itemAssembler;
-        this.discountAssembler = discountAssembler;
         this.allocationAssembler = allocationAssembler;
     }
 
@@ -34,17 +30,13 @@ public class BillAssembler
                 .stream()
                 .map(this.itemAssembler::toDomainModel)
                 .collect(Collectors.toList());
-        List<Discount> discounts = billEntity.getDiscountEntities()
-                .stream()
-                .map(this.discountAssembler::toDomainModel)
-                .collect(Collectors.toList());
         List<Allocation> allocations = billEntity.getAllocationEntities()
                 .stream()
                 .map(this.allocationAssembler::toDomainModel)
                 .collect(Collectors.toList());
         return Bill.create(new Identity(billEntity.getBillId()), billEntity.getBillNumber(),
                 billEntity.getCreationDate(), billEntity.getStatus(), billEntity.getEffectiveDate(),
-                billEntity.getDueTerm(), items, discounts, allocations);
+                billEntity.getDueTerm(), items, allocations);
     }
 
     public BillEntity toPersistenceModel(Bill bill)
@@ -53,10 +45,6 @@ public class BillAssembler
                 .stream()
                 .map(this.itemAssembler::toPersistenceModel)
                 .collect(Collectors.toList());
-        List<DiscountEntity> discountEntities = bill.getDiscounts()
-                .stream()
-                .map(this.discountAssembler::toPersistenceModel)
-                .collect(Collectors.toList());
         List<AllocationEntity> allocationEntities = bill.getAllocations()
                 .stream()
                 .map(this.allocationAssembler::toPersistenceModel)
@@ -64,6 +52,6 @@ public class BillAssembler
 
         return new BillEntity((bill.getBillId()).getId(), bill.getBillNumber(), bill.getStatus(),
                 bill.getCreationDate(), bill.getEffectiveDate(), bill.getDueTerm(),
-                itemEntities, discountEntities, allocationEntities);
+                itemEntities, allocationEntities);
     }
 }
