@@ -1,6 +1,7 @@
 package ca.ulaval.glo4002.billing.service.assembler;
 
 import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
+import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocatorConfiguration;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainBillAssembler;
@@ -18,10 +19,10 @@ public class BillServiceAssembler
 {
     public BillService create()
     {
-        ClientRepository clientRepository = ServiceLocator.getService(ServiceLocator.CLIENT_REPOSITORY);
-        AccountRepository accountRepository = ServiceLocator.getService(ServiceLocator.ACCOUNT_REPOSITORY);
-        ProductRepository productRepository = ServiceLocator.getService(ServiceLocator.PRODUCT_REPOSITORY);
-        BillRepository billRepository = ServiceLocator.getService(ServiceLocator.BILL_REPOSITORY);
+        ClientRepository clientRepository = ServiceLocator.getService(ServiceLocatorConfiguration.CLIENT_REPOSITORY);
+        AccountRepository accountRepository = ServiceLocator.getService(ServiceLocatorConfiguration.ACCOUNT_REPOSITORY);
+        ProductRepository productRepository = ServiceLocator.getService(ServiceLocatorConfiguration.PRODUCT_REPOSITORY);
+        BillRepository billRepository = ServiceLocator.getService(ServiceLocatorConfiguration.BILL_REPOSITORY);
 
         ProductValidator productValidator = new ProductValidator(productRepository);
         ItemRequestAssembler itemRequestAssembler = new ItemRequestAssembler(productValidator);

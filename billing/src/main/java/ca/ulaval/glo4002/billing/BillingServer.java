@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing;
 
+import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocatorConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -28,6 +29,7 @@ public class BillingServer implements Runnable
         contextHandler.addServlet(servletHolder, "/*");
         try
         {
+            ServiceLocatorConfiguration.configure();
             server.start();
             server.join();
         }
