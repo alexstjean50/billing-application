@@ -83,22 +83,6 @@ public class AccountTest
     }
 
     @Test
-    public void givenAnAccountWithBills_whenRetrievingAcceptedBills_thenShouldOnlyReturnAcceptedBills()
-    {
-        Bill acceptedBill = mock(Bill.class);
-        given(acceptedBill.isAccepted()).willReturn(true);
-        Bill cancelledBill = mock(Bill.class);
-        given(cancelledBill.isAccepted()).willReturn(false);
-        Bill submittal = mock(Bill.class);
-        given(submittal.isAccepted()).willReturn(false);
-        Account account = createAccountWithManyBills(Arrays.asList(cancelledBill, acceptedBill, submittal));
-
-        List<Bill> retrievedBills = account.retrieveAcceptedBills();
-
-        assertEquals(Collections.singletonList(acceptedBill), retrievedBills);
-    }
-
-    @Test
     public void givenAnAccountWithABill_whenFindingTheBill_thenShouldReturnTheSameBill()
     {
         given(this.bill.isEqualBillNumber(SOME_BILL_NUMBER)).willReturn(true);

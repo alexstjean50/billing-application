@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Account
 {
@@ -62,14 +61,6 @@ public class Account
         allocate();
     }
 
-    public Bill findBillByNumber(long billNumber)
-    {
-        return this.bills.stream()
-                .filter(bill -> bill.isEqualBillNumber(billNumber))
-                .findFirst()
-                .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
-    }
-
     private Bill findAcceptedBillByNumber(long billNumber)
     {
         return this.bills.stream()
@@ -99,16 +90,17 @@ public class Account
         return acceptedBill;
     }
 
+    public Bill findBillByNumber(long billNumber)
+    {
+        return this.bills.stream()
+                .filter(bill -> bill.isEqualBillNumber(billNumber))
+                .findFirst()
+                .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
+    }
+
     private void allocate()
     {
         this.allocationStrategy.allocate(this.bills, this.payments);
-    }
-
-    public List<Bill> retrieveAcceptedBills()
-    {
-        return this.bills.stream()
-                .filter(Bill::isAccepted)
-                .collect(Collectors.toList());
     }
 
     public List<Payment> getPayments()
