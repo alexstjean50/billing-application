@@ -42,14 +42,13 @@ public class DefaultAllocationStrategyTest
     private Instant someOlderDate;
     private List<Bill> bills;
     private List<Payment> payments;
-    private Clock clock;
     private DefaultAllocationStrategy allocationStrategy;
 
     @Before
     public void initializeTests() throws Exception
     {
-        this.clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        this.someDate = Instant.now(this.clock);
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        this.someDate = Instant.now(clock);
         this.someOlderDate = this.someDate.minusSeconds(100);
 
         initializePayment(this.payment);
