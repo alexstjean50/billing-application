@@ -1,7 +1,6 @@
 package ca.ulaval.glo4002.billing.domain.strategy.allocation;
 
 import ca.ulaval.glo4002.billing.domain.Money;
-import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
@@ -9,88 +8,86 @@ import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultAllocationStrategyTest
 {
-    private static final Instant SOME_DATE = Instant.now();
-    private static final long SOME_BILL_NUMBER = 6666;
     private static final Money SOME_AMOUNT = Money.valueOf(67);
     @Mock
     private Item item;
     @Mock
     private Identity identity;
     @Mock
-    private Allocation allocation;
-    @Mock
     private Bill bill;
     @Mock
+    private Bill anotherBill;
+    @Mock
     private Payment payment;
+    @Mock
+    private Payment anotherPayment;
+    private Instant someDate;
+    private Instant someOlderDate;
     private List<Bill> bills;
     private List<Payment> payments;
-    private List<Allocation> allocations;
     private Clock clock;
     private DefaultAllocationStrategy allocationStrategy;
 
     @Before
-    public void initializeBill() throws Exception
+    public void initializeTests() throws Exception
     {
-        this.clock = Clock.fixed(SOME_DATE, ZoneId.systemDefault());
+        this.clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        this.someDate = Instant.now(this.clock);
+        this.someOlderDate = this.someDate.minusSeconds(100);
 
-        given(this.payment.getAmount()).willReturn(SOME_AMOUNT);
-        given(this.payment.getPaymentDate()).willReturn(SOME_DATE);
-        given(this.payment.isCompleted()).willReturn(false);
+        initializePayment(this.payment);
+        initializePayment(this.anotherPayment);
 
-        given(this.bill.calculateExpectedPaymentDate()).willReturn(SOME_DATE);
-        given(this.bill.isAccepted()).willReturn(true);
-        given(this.bill.calculateTotalItemPrice()).willReturn(SOME_AMOUNT);
+        initializeBill(this.bill);
+        initializeBill(this.anotherBill);
 
-        given(this.allocation.getAllocatedAmount()).willReturn(SOME_AMOUNT);
+        this.payments = Arrays.asList(this.payment, this.anotherPayment);
 
-        this.payments = new ArrayList<>();
-        this.payments.add(this.payment);
-
-        this.bills = new ArrayList<>();
-        this.bills.add(this.bill);
+        this.bills = Arrays.asList(this.bill, this.anotherBill);
 
         this.allocationStrategy = new DefaultAllocationStrategy();
     }
 
-    @Test
-    public void givenASubmittalBill_whenAllocating_thenShouldNotAllocateOnBill()
+    private void initializePayment(Payment payment)
     {
-        given(this.bill.isAccepted()).willReturn(false);
+        given(payment.getPaymentDate()).willReturn(this.someDate);
+        when(payment.compareTo(any(Payment.class))).thenCallRealMethod();
+        given(payment.calculateUnallocatedBalance()).willReturn(SOME_AMOUNT);
+        given(payment.isCompleted()).willReturn(false);
+    }
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
-
-        assertThat(this.bill.getAllocations(), is(Collections.emptyList()));
+    private void initializeBill(Bill bill)
+    {
+        when(bill.compareTo(any(Bill.class))).thenCallRealMethod();
+        given(bill.calculateExpectedPaymentDate()).willReturn(this.someDate);
+        given(bill.calculateUnpaidBalance()).willReturn(SOME_AMOUNT);
+        given(bill.isAllocatable()).willReturn(true, false);
+        given(bill.isPaid()).willReturn(false, true);
     }
 
     @Test
-    public void givenAnAcceptedPaidBill_whenAllocating_thenShouldNotAllocateOnBill()
+    public void givenAnUnallocatableBill_whenAllocating_thenShouldNotAllocateOnBill()
     {
-        given(this.bill.isPaid()).willReturn(true);
+        given(this.bill.isAllocatable()).willReturn(false);
 
-        this.allocationStrategy.allocate(bills, payments);
+        this.allocationStrategy.allocate(this.bills, this.payments);
 
         verify(this.bill, never()).addAllocation(any());
     }
@@ -100,228 +97,59 @@ public class DefaultAllocationStrategyTest
     {
         given(this.payment.isCompleted()).willReturn(true);
 
-        this.allocationStrategy.allocate(bills, payments);
+        this.allocationStrategy.allocate(this.bills, this.payments);
 
         verify(this.payment, never()).addAllocation(any());
     }
 
     @Test
-    public void givenAnAcceptedUnpaidBill_whenAllocating_thenShouldAllocateOnBill()
+    public void givenAnAllocatableBill_whenAllocating_thenShouldAllocateOnBill()
     {
-        List<Money> paymentAmounts = Collections.singletonList(SOME_AMOUNT);
-        List<Payment> payments = createPayments(paymentAmounts);
-        Bill bill = createAcceptedBill(SOME_AMOUNT);
-        List<Bill> bills = Collections.singletonList(bill);
+        given(this.bill.isAllocatable()).willReturn(true, false);
 
-        this.allocationStrategy.allocate(bills, payments);
+        this.allocationStrategy.allocate(this.bills, this.payments);
 
-        assertThat(bill.getAllocations(), not(is(Collections.emptyList())));
+        verify(this.bill).addAllocation(any());
     }
 
     @Test
-    public void givenAnAcceptedUnpaidBill_whenAllocating_thenShouldAllocateOnPayment()
+    public void givenAnAllocatableBill_whenAllocating_thenShouldAllocateOnPayment()
     {
-        Payment payment = createPayment(SOME_AMOUNT);
-        List<Payment> payments = Collections.singletonList(payment);
-        Bill bill = createAcceptedBill(SOME_AMOUNT);
-        List<Bill> bills = Collections.singletonList(bill);
+        given(this.bill.isAllocatable()).willReturn(true, false);
 
-        this.allocationStrategy.allocate(bills, payments);
+        this.allocationStrategy.allocate(this.bills, this.payments);
 
-        assertThat(payment.getAllocations(), not(is(Collections.emptyList())));
-    }
-
-    @Test
-    public void givenAnAcceptedUnpaidBill_whenAllocating_thenShouldCreateAllocationWithCorrespondingBillNumber()
-    {
-        Payment payment = createPayment(SOME_AMOUNT);
-        List<Payment> payments = Collections.singletonList(payment);
-        Bill bill = createAcceptedBill(SOME_AMOUNT);
-        List<Bill> bills = Collections.singletonList(bill);
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertTrue(payment.getAllocations()
-                .stream()
-                .anyMatch(allocation -> allocation.getBillNumber() == bill.getBillNumber()));
+        verify(this.payment, times(this.bills.size())).addAllocation(any());
     }
 
     @Test
     public void givenAcceptedUnpaidBills_whenAllocating_thenShouldAllocateOnBillWithNewerExpectedPaymentDateLast()
     {
-        List<Money> paymentAmounts = Collections.singletonList(SOME_AMOUNT);
-        List<Payment> payments = createPayments(paymentAmounts);
-        Bill olderBill = createOlderAcceptedBill(SOME_AMOUNT);
-        Bill newerBill = createAcceptedBill(SOME_AMOUNT);
-        List<Bill> bills = Arrays.asList(newerBill, olderBill);
+        given(this.anotherBill.calculateExpectedPaymentDate()).willReturn(this.someOlderDate);
 
-        this.allocationStrategy.allocate(bills, payments);
+        this.allocationStrategy.allocate(this.bills, this.payments);
 
-        assertThat(newerBill.getAllocations(), is(Collections.emptyList()));
+        InOrder inOrder = inOrder(this.anotherBill, this.bill);
+
+        inOrder.verify(this.anotherBill)
+                .addAllocation(any());
+        inOrder.verify(this.bill)
+                .addAllocation(any());
     }
 
     @Test
-    public void givenAcceptedUnpaidBills_whenAllocating_thenShouldAllocateOnBillWithOldestExpectedPaymentDateFirst()
+    public void givenUnallocatedPayments_whenAllocating_thenShouldAllocateOlderPaymentFirst()
     {
-        List<Money> paymentAmounts = Collections.singletonList(SOME_AMOUNT);
-        List<Payment> payments = createPayments(paymentAmounts);
-        Bill olderBill = createOlderAcceptedBill(SOME_AMOUNT);
-        Bill newerBill = createAcceptedBill(SOME_AMOUNT);
-        List<Bill> bills = Arrays.asList(newerBill, olderBill);
+        given(this.anotherPayment.getPaymentDate()).willReturn(this.someOlderDate);
+        given(this.anotherPayment.isCompleted()).willReturn(false, false, true);
 
-        this.allocationStrategy.allocate(bills, payments);
+        this.allocationStrategy.allocate(this.bills, this.payments);
 
-        assertThat(olderBill.getAllocations(), not(is(Collections.emptyList())));
-    }
+        InOrder inOrder = inOrder(this.anotherPayment, this.payment);
 
-    @Test
-    public void givenUnallocatedPayments_whenAllocating_thenShouldAllocateNewerPaymentLast()
-    {
-        Payment olderPayment = createOlderPayment(SOME_AMOUNT);
-        Payment newerPayment = createPayment(SOME_AMOUNT);
-        List<Payment> payments = Arrays.asList(newerPayment, olderPayment);
-        List<Money> billAmounts = Collections.singletonList(SOME_AMOUNT);
-        List<Bill> bills = createAcceptedBills(billAmounts);
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertThat(newerPayment.getAllocations(), is(Collections.emptyList()));
-    }
-
-    @Test
-    public void givenUnallocatedPayments_whenAllocating_thenShouldAllocateOldestPaymentFirst()
-    {
-        Payment olderPayment = createOlderPayment(SOME_AMOUNT);
-        Payment newerPayment = createPayment(SOME_AMOUNT);
-        List<Payment> payments = Arrays.asList(newerPayment, olderPayment);
-        List<Money> billAmounts = Collections.singletonList(SOME_AMOUNT);
-        List<Bill> bills = createAcceptedBills(billAmounts);
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertThat(olderPayment.getAllocations(), not(is(Collections.emptyList())));
-    }
-
-    @Test
-    public void givenABillAndPaymentWithUnevenAmounts_whenAllocating_thenShouldAllocateMaximumPossibleAmount()
-    {
-        Money expectedAllocatedAmount = SOME_AMOUNT.subtract(Money.valueOf(BigDecimal.TEN));
-        List<Money> paymentAmounts = Collections.singletonList(expectedAllocatedAmount);
-        List<Payment> payments = createPayments(paymentAmounts);
-        Bill bill = createAcceptedBill(SOME_AMOUNT);
-        List<Bill> bills = Collections.singletonList(bill);
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertTrue(bill.getAllocations()
-                .stream()
-                .anyMatch(allocation -> allocation.getAllocatedAmount()
-                        .equals(expectedAllocatedAmount)));
-    }
-
-    @Test
-    public void givenMultiplePaymentsWithLowerTotalAmountThanBill_whenAllocating_thenShouldAllocateAllPaymentsToBill()
-    {
-        List<Money> paymentAmounts = Collections.nCopies(2, SOME_AMOUNT);
-        List<Payment> payments = createPayments(paymentAmounts);
-        Bill bill = createAcceptedBill(SOME_AMOUNT.multiply(BigDecimal.TEN));
-        List<Bill> bills = Collections.singletonList(bill);
-        int expectedAllocationsCount = payments.size();
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertEquals(expectedAllocationsCount, bill.getAllocations()
-                .size());
-    }
-
-    @Test
-    public void givenPaymentWithHigherAmountThanMultipleBills_whenAllocating_thenShouldAllocatePaymentToAllBills()
-    {
-        Payment payment = createPayment(SOME_AMOUNT.multiply(BigDecimal.TEN));
-        List<Payment> payments = Collections.singletonList(payment);
-        List<Money> billAmounts = Collections.nCopies(3, SOME_AMOUNT);
-        List<Bill> bills = createAcceptedBills(billAmounts);
-        int expectedAllocationsCount = bills.size();
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertEquals(expectedAllocationsCount, payment.getAllocations()
-                .size());
-    }
-
-    @Test
-    public void givenSmallBillsWithBigPayment_whenAllocating_thenShouldHaveExceedingAmount()
-    {
-        Payment payment = createPayment(SOME_AMOUNT.multiply(BigDecimal.TEN));
-        List<Payment> payments = Collections.singletonList(payment);
-        List<Money> billAmounts = Collections.nCopies(3, SOME_AMOUNT);
-        List<Bill> bills = createAcceptedBills(billAmounts);
-
-        this.allocationStrategy.allocate(bills, payments);
-
-        assertFalse(payment.isCompleted());
-    }
-
-    /*private List<Payment> createPayments(List<Money> amounts)
-    {
-        return amounts.stream()
-                .map(this::createPayment)
-                .collect(Collectors.toList());
-    }
-
-    private Payment createPayment(Money amount)
-    {
-        PaymentMethod paymentMethod = new PaymentMethod(Identity.EMPTY, SOME_BANK_ACCOUNT,
-                PaymentMethodSource.CREDIT_CARD);
-        return new Payment(Identity.EMPTY, SOME_PAYMENT_NUMBER, amount, SOME_DATE, paymentMethod,
-                new ArrayList<>());
-    }
-
-    private Payment createOlderPayment(Money amount)
-    {
-        PaymentMethod paymentMethod = new PaymentMethod(Identity.EMPTY, SOME_BANK_ACCOUNT,
-                PaymentMethodSource.CREDIT_CARD);
-        return new Payment(Identity.EMPTY, SOME_PAYMENT_NUMBER, amount, SOME_OLDER_DATE, paymentMethod,
-                new ArrayList<>());
-    }
-
-    private List<Bill> createAcceptedBills(List<Money> amounts)
-    {
-        return amounts.stream()
-                .map(this::createAcceptedBill)
-                .collect(Collectors.toList());
-    }
-
-    private Bill createAcceptedBill(Money amount)
-    {
-        List<Item> items = this.createItemsWithTotalEqualToBillAmount(amount);
-        return Bill.create(identity, SOME_BILL_NUMBER, SOME_DATE, SOME_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, items, new ArrayList<>());
-    }
-
-    private Bill createSubmittal(Money amount)
-    {
-        List<Item> items = this.createItemsWithTotalEqualToBillAmount(amount);
-        return Bill.create(identity, SOME_BILL_NUMBER, SOME_DATE, SOME_OTHER_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, items, new ArrayList<>());
-    }
-
-    private Bill createOlderAcceptedBill(Money amount)
-    {
-        List<Item> items = this.createItemsWithTotalEqualToBillAmount(amount);
-        return Bill.create(identity, SOME_BILL_NUMBER, SOME_OLDER_DATE, SOME_BILL_STATUS, SOME_OLDER_DATE,
-                SOME_DUE_TERM, items, new ArrayList<>());
-    }
-
-    private List<Item> createItemsWithTotalEqualToBillAmount(Money amount)
-    {
-        List<Item> items = Collections.singletonList(item);
-        given(item.calculatePrice()).willReturn(amount);
-        return items;
-    }*/
-
-    private Allocation createAnAllocation(Money allocatedAmount)
-    {
-        return new Allocation(this.identity, SOME_BILL_NUMBER, allocatedAmount, SOME_DATE);
+        inOrder.verify(this.anotherPayment)
+                .addAllocation(any());
+        inOrder.verify(this.payment)
+                .addAllocation(any());
     }
 }
