@@ -65,23 +65,6 @@ public class DefaultAllocationStrategyTest
         this.allocationStrategy = new DefaultAllocationStrategy();
     }
 
-    private void initializePayment(Payment payment)
-    {
-        given(payment.getPaymentDate()).willReturn(this.someDate);
-        when(payment.compareTo(any(Payment.class))).thenCallRealMethod();
-        given(payment.calculateUnallocatedBalance()).willReturn(SOME_AMOUNT);
-        given(payment.isCompleted()).willReturn(false);
-    }
-
-    private void initializeBill(Bill bill)
-    {
-        when(bill.compareTo(any(Bill.class))).thenCallRealMethod();
-        given(bill.calculateExpectedPaymentDate()).willReturn(this.someDate);
-        given(bill.calculateUnpaidBalance()).willReturn(SOME_AMOUNT);
-        given(bill.isAllocatable()).willReturn(true, false);
-        given(bill.isPaid()).willReturn(false, true);
-    }
-
     @Test
     public void givenAnUnallocatableBill_whenAllocating_thenShouldNotAllocateOnBill()
     {
@@ -151,5 +134,22 @@ public class DefaultAllocationStrategyTest
                 .addAllocation(any());
         inOrder.verify(this.payment)
                 .addAllocation(any());
+    }
+
+    private void initializePayment(Payment payment)
+    {
+        given(payment.getPaymentDate()).willReturn(this.someDate);
+        when(payment.compareTo(any(Payment.class))).thenCallRealMethod();
+        given(payment.calculateUnallocatedBalance()).willReturn(SOME_AMOUNT);
+        given(payment.isCompleted()).willReturn(false);
+    }
+
+    private void initializeBill(Bill bill)
+    {
+        when(bill.compareTo(any(Bill.class))).thenCallRealMethod();
+        given(bill.calculateExpectedPaymentDate()).willReturn(this.someDate);
+        given(bill.calculateUnpaidBalance()).willReturn(SOME_AMOUNT);
+        given(bill.isAllocatable()).willReturn(true, false);
+        given(bill.isPaid()).willReturn(false, true);
     }
 }
