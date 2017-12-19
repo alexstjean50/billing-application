@@ -1,7 +1,6 @@
 package ca.ulaval.glo4002.billing.service.assembler;
 
-import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
-import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocatorConfiguration;
+import ca.ulaval.glo4002.billing.contexts.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.PaymentService;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainPaymentAssembler;
@@ -15,9 +14,9 @@ public class PaymentServiceAssembler
 {
     public PaymentService create()
     {
-        AccountRepository accountRepository = ServiceLocator.getService(ServiceLocatorConfiguration.ACCOUNT_REPOSITORY);
-        PaymentRepository paymentRepository = ServiceLocator.getService(ServiceLocatorConfiguration.PAYMENT_REPOSITORY);
-        ClientRepository clientRepository = ServiceLocator.getService(ServiceLocatorConfiguration.CLIENT_REPOSITORY);
+        AccountRepository accountRepository = ServiceLocator.getService(AccountRepository.class);
+        PaymentRepository paymentRepository = ServiceLocator.getService(PaymentRepository.class);
+        ClientRepository clientRepository = ServiceLocator.getService(ClientRepository.class);
         DomainAccountAssembler domainAccountAssembler = new DomainAccountAssembler();
         DomainPaymentAssembler domainPaymentAssembler = new DomainPaymentAssembler(paymentRepository);
         PaymentCreationResponseAssembler paymentCreationResponseAssembler = new PaymentCreationResponseAssembler();

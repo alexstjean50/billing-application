@@ -1,4 +1,4 @@
-package ca.ulaval.glo4002.billing.persistence.manager;
+package ca.ulaval.glo4002.billing.contexts;
 
 import ca.ulaval.glo4002.billing.persistence.assembler.account.AccountAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.client.ClientAssembler;
@@ -7,6 +7,7 @@ import ca.ulaval.glo4002.billing.persistence.assembler.product.ProductAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.transaction.TransactionAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AccountEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.TransactionEntity;
+import ca.ulaval.glo4002.billing.persistence.manager.HibernateQueryHelper;
 import ca.ulaval.glo4002.billing.persistence.manager.factory.EntityManagerFactoryFactory;
 import ca.ulaval.glo4002.billing.persistence.repository.account.AccountHibernateRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.bill.BillHibernateRepository;
@@ -24,7 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 
-public class ServiceLocatorConfiguration
+public class ProdContext implements Context
 {
     public static final Class<ClientRepository> CLIENT_REPOSITORY = ClientRepository.class;
     public static final Class<ProductRepository> PRODUCT_REPOSITORY = ProductRepository.class;
@@ -33,30 +34,29 @@ public class ServiceLocatorConfiguration
     public static final Class<PaymentRepository> PAYMENT_REPOSITORY = PaymentRepository.class;
     public static final Class<TransactionRepository> TRANSACTION_REPOSITORY = TransactionRepository.class;
 
-    public static void configure()
+    @Override
+    public void apply()
     {
-        ServiceLocator locator = new ServiceLocator();
-        ServiceLocator.load(locator);
-        loadRepositories(locator);
+        loadRepositories();
     }
 
-    private static void loadRepositories(ServiceLocator locator)
+    private static void loadRepositories()
     {
-        loadRestRepositories(locator);
-        loadHibernateRepositories(locator);
+        loadRestRepositories();
+        loadHibernateRepositories();
     }
 
-    private static void loadRestRepositories(ServiceLocator locator)
+    private static void loadRestRepositories()
     {
         RestTemplate restTemplate = new RestTemplate();
         ClientAssembler clientAssembler = new ClientAssembler();
         ProductAssembler productAssembler = new ProductAssembler();
 
-        locator.loadService(CLIENT_REPOSITORY, new ClientRestRepository(restTemplate, clientAssembler));
-        locator.loadService(PRODUCT_REPOSITORY, new ProductRestRepository(restTemplate, productAssembler));
+        ServiceLocator.loadService(CLIENT_REPOSITORY, new ClientRestRepository(restTemplate, clientAssembler));
+        ServiceLocator.loadService(PRODUCT_REPOSITORY, new ProductRestRepository(restTemplate, productAssembler));
     }
 
-    private static void loadHibernateRepositories(ServiceLocator locator)
+    private static void loadHibernateRepositories()
     {
         EntityManagerFactory entityManagerFactory = new EntityManagerFactoryFactory().create();
 
@@ -70,11 +70,12 @@ public class ServiceLocatorConfiguration
 
         TransactionAssembler transactionAssembler = new TransactionAssembler();
 
-        locator.loadService(ACCOUNT_REPOSITORY, new AccountHibernateRepository(accountAssembler, entityManagerFactory,
+        ServiceLocator.loadService(ACCOUNT_REPOSITORY, new AccountHibernateRepository(accountAssembler,
+                entityManagerFactory,
                 accountEntityHibernateQueryHelper));
-        locator.loadService(BILL_REPOSITORY, new BillHibernateRepository(entityManagerFactory));
-        locator.loadService(PAYMENT_REPOSITORY, new PaymentHibernateRepository(entityManagerFactory));
-        locator.loadService(TRANSACTION_REPOSITORY,
+        ServiceLocator.loadService(BILL_REPOSITORY, new BillHibernateRepository(entityManagerFactory));
+        ServiceLocator.loadService(PAYMENT_REPOSITORY, new PaymentHibernateRepository(entityManagerFactory));
+        ServiceLocator.loadService(TRANSACTION_REPOSITORY,
                 new TransactionHibernateRepository(transactionEntityHibernateQueryHelper, entityManagerFactory,
                         transactionAssembler));
     }
