@@ -1,14 +1,20 @@
 package ca.ulaval.glo4002.billing.persistence.entity;
 
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
+import ca.ulaval.glo4002.billing.service.dto.serializer.InstantDeserializer;
+import ca.ulaval.glo4002.billing.service.dto.serializer.InstantSerializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Instant;
 
 public class ClientEntity
 {
     private final long id;
+    @JsonSerialize(using = InstantSerializer.class)
+    @JsonDeserialize(using = InstantDeserializer.class)
     private final Instant creationDate;
     private final DueTerm defaultTerm;
 

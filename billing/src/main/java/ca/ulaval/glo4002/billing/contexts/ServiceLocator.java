@@ -9,11 +9,6 @@ public class ServiceLocator
 
     public static <T> void loadService(Class<T> contract, T service)
     {
-        if (services.containsKey(contract))
-        {
-            throw new CannotRegisterContractTwiceException(contract);
-        }
-
         services.put(contract, service);
     }
 

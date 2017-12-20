@@ -3,6 +3,7 @@ package ca.ulaval.glo4002.billing.service.dto.response;
 import ca.ulaval.glo4002.billing.domain.billing.transaction.Transaction;
 import ca.ulaval.glo4002.billing.service.dto.serializer.InstantDeserializer;
 import ca.ulaval.glo4002.billing.service.dto.serializer.InstantSerializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -13,12 +14,22 @@ public class TransactionEntryResponse
 {
     @JsonSerialize(using = InstantSerializer.class)
     @JsonDeserialize(using = InstantDeserializer.class)
-    private final Instant date;
-    private final String transactionType;
-    private final long clientId;
-    private final String typeOperation;
-    private final BigDecimal amount;
-    private final BigDecimal balance;
+    @JsonProperty("date")
+    private Instant date;
+    @JsonProperty("typeTransaction")
+    private String typeTransaction;
+    @JsonProperty("clientId")
+    private long clientId;
+    @JsonProperty("typeOperation")
+    private String typeOperation;
+    @JsonProperty("amount")
+    private BigDecimal amount;
+    @JsonProperty("balance")
+    private BigDecimal balance;
+
+    public TransactionEntryResponse()
+    {
+    }
 
     public static TransactionEntryResponse create(Transaction transaction)
     {
@@ -29,14 +40,44 @@ public class TransactionEntryResponse
                 .asBigDecimal());
     }
 
-    public TransactionEntryResponse(Instant date, String transactionType, long clientId, String typeOperation,
+    public TransactionEntryResponse(Instant date, String typeTransaction, long clientId, String typeOperation,
                                     BigDecimal amount, BigDecimal balance)
     {
         this.date = date;
-        this.transactionType = transactionType;
+        this.typeTransaction = typeTransaction;
         this.clientId = clientId;
         this.typeOperation = typeOperation;
         this.amount = amount;
+        this.balance = balance;
+    }
+
+    public void setDate(Instant date)
+    {
+        this.date = date;
+    }
+
+    public void setTypeTransaction(String typeTransaction)
+    {
+        this.typeTransaction = typeTransaction;
+    }
+
+    public void setClientId(long clientId)
+    {
+        this.clientId = clientId;
+    }
+
+    public void setTypeOperation(String typeOperation)
+    {
+        this.typeOperation = typeOperation;
+    }
+
+    public void setAmount(BigDecimal amount)
+    {
+        this.amount = amount;
+    }
+
+    public void setBalance(BigDecimal balance)
+    {
         this.balance = balance;
     }
 
@@ -45,9 +86,9 @@ public class TransactionEntryResponse
         return date;
     }
 
-    public String getTransactionType()
+    public String getTypeTransaction()
     {
-        return transactionType;
+        return typeTransaction;
     }
 
     public long getClientId()

@@ -8,6 +8,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import java.time.Clock;
 import java.util.Optional;
 
 public class BillingServer implements Runnable
@@ -28,13 +29,13 @@ public class BillingServer implements Runnable
     {
         Context context = resolveContext(Optional.ofNullable(System.getProperty(CONTEXT_PROPERTY))
                 .orElse(DEFAULT_CONTEXT));
-        start(PORT, context);
+        start(PORT, context, Clock.systemDefaultZone());
         join();
     }
 
-    public void start(int port, Context context)
+    public void start(int port, Context context, Clock clock)
     {
-        context.apply();
+        context.apply(clock);
         this.server = new Server(port);
         ServletContextHandler contextHandler = new ServletContextHandler(this.server, "/");
         ResourceConfig packageConfig = new ResourceConfig().packages(ROOT_PACKAGE);

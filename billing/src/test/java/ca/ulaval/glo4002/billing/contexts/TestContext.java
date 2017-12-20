@@ -36,7 +36,9 @@ import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -52,6 +54,7 @@ public class TestContext implements Context
 
     private static void loadRepositories()
     {
+        ServiceLocator.loadService(Clock.class, Clock.fixed(Instant.now(), ZoneId.systemDefault()));
         loadRestRepositories();
         loadHibernateRepositories();
     }
