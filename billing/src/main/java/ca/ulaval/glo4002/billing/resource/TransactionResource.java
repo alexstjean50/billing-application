@@ -35,8 +35,8 @@ public class TransactionResource
         Optional<String> optionalEndMonth = Optional.ofNullable(endMonth);
         Optional<Long> optionalYear = Optional.ofNullable(year);
 
-        List<TransactionEntryResponse> transactionEntryResponses = this.transactionService.retrieveTransactions
-                (optionalStartMonth, optionalEndMonth, optionalYear);
+        List<TransactionEntryResponse> transactionEntryResponses =
+                this.transactionService.retrieveTransactions(optionalStartMonth, optionalEndMonth, optionalYear);
 
         return new TransactionsResponse(transactionEntryResponses);
     }

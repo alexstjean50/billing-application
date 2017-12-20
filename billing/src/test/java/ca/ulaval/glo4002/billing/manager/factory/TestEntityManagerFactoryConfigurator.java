@@ -1,4 +1,4 @@
-package ca.ulaval.glo4002.billing.persistence.manager.factory;
+package ca.ulaval.glo4002.billing.manager.factory;
 
 import ca.ulaval.glo4002.billing.persistence.entity.*;
 import com.google.common.collect.ImmutableMap;
@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,44 +22,29 @@ import java.util.stream.Collectors;
 
 import static org.hibernate.cfg.AvailableSettings.*;
 
-public class EntityManagerFactoryFactory
+public class TestEntityManagerFactoryConfigurator
 {
     private static final String H2_DRIVER_CLASS = "org.h2.Driver";
-    private static final String DATABASE_URL = "jdbc:h2:~/billing";
-    private static final String DATABASE_STARTUP_MODE = "create";
-    private static EntityManagerFactory entityManagerFactory;
+    private static final String DATABASE_URL = "jdbc:h2:mem:test";
+    private static final String DATABASE_STARTUP_MODE = "create-drop";
 
-    public EntityManagerFactory create()
+    public static EntityManagerFactory initializeEntityManagerFactory()
     {
-        this.initializeEntityManagerFactory();
-        return entityManagerFactory;
-    }
 
-    private void initializeEntityManagerFactory()
-    {
-        if (!this.isEntityManagerFactoryInitialized())
-        {
-            entityManagerFactory = new HibernatePersistenceProvider().createContainerEntityManagerFactory
-                    (archiverPersistenceUnitInfo(), ImmutableMap.<String, Object>builder().put(DRIVER, H2_DRIVER_CLASS)
-                            .put(URL, DATABASE_URL)
-                            .put(DIALECT, org.hibernate.dialect.H2Dialect.class)
-                            .put(HBM2DDL_AUTO, DATABASE_STARTUP_MODE)
-                            .put(SHOW_SQL, false)
-                            .put(ISOLATION, Connection.TRANSACTION_REPEATABLE_READ)
-                            .put(QUERY_STARTUP_CHECKING, false)
-                            .put(GENERATE_STATISTICS, false)
-                            .put(USE_REFLECTION_OPTIMIZER, false)
-                            .put(USE_SECOND_LEVEL_CACHE, false)
-                            .put(USE_QUERY_CACHE, false)
-                            .put(USE_STRUCTURED_CACHE, false)
-                            .put(STATEMENT_BATCH_SIZE, 20)
-                            .build());
-        }
-    }
-
-    private boolean isEntityManagerFactoryInitialized()
-    {
-        return entityManagerFactory != null;
+        return new HibernatePersistenceProvider().createContainerEntityManagerFactory
+                (archiverPersistenceUnitInfo(), ImmutableMap.<String, Object>builder().put(DRIVER, H2_DRIVER_CLASS)
+                        .put(URL, DATABASE_URL)
+                        .put(DIALECT, org.hibernate.dialect.H2Dialect.class)
+                        .put(HBM2DDL_AUTO, DATABASE_STARTUP_MODE)
+                        .put(SHOW_SQL, false)
+                        .put(QUERY_STARTUP_CHECKING, false)
+                        .put(GENERATE_STATISTICS, false)
+                        .put(USE_REFLECTION_OPTIMIZER, false)
+                        .put(USE_SECOND_LEVEL_CACHE, false)
+                        .put(USE_QUERY_CACHE, false)
+                        .put(USE_STRUCTURED_CACHE, false)
+                        .put(STATEMENT_BATCH_SIZE, 20)
+                        .build());
     }
 
     private static PersistenceUnitInfo archiverPersistenceUnitInfo()
@@ -106,7 +90,7 @@ public class EntityManagerFactoryFactory
             }
 
             @Override
-            public List<URL> getJarFileUrls()
+            public List<java.net.URL> getJarFileUrls()
             {
                 try
                 {

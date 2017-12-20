@@ -29,6 +29,12 @@ public class PaymentResource
         this.paymentService = new PaymentServiceAssembler().create();
     }
 
+    public PaymentResource(PaymentService paymentService, TransactionService transactionService)
+    {
+        this.paymentService = paymentService;
+        this.transactionService = transactionService;
+    }
+
     @POST
     public Response createPayment(PaymentCreationRequest request)
     {

@@ -16,6 +16,7 @@ public class BillingServer implements Runnable
     private static final String ROOT_PACKAGE = "ca.ulaval.glo4002.billing";
     private static final String CONTEXT_PROPERTY = "context";
     private static final String DEFAULT_CONTEXT = "prod";
+    private Server server;
 
     public static void main(String[] args)
     {
@@ -27,18 +28,24 @@ public class BillingServer implements Runnable
     {
         Context context = resolveContext(Optional.ofNullable(System.getProperty(CONTEXT_PROPERTY))
                 .orElse(DEFAULT_CONTEXT));
-        Server server = new Server(PORT);
-        ServletContextHandler contextHandler = new ServletContextHandler(server, "/");
+        start(PORT, context);
+        join();
+    }
+
+    public void start(int port, Context context)
+    {
+        context.apply();
+        this.server = new Server(port);
+        ServletContextHandler contextHandler = new ServletContextHandler(this.server, "/");
         ResourceConfig packageConfig = new ResourceConfig().packages(ROOT_PACKAGE);
         ServletContainer container = new ServletContainer(packageConfig);
         ServletHolder servletHolder = new ServletHolder(container);
 
         contextHandler.addServlet(servletHolder, "/*");
-        context.apply();
+
         try
         {
-            server.start();
-            server.join();
+            this.server.start();
         }
         catch (Exception e)
         {
@@ -46,7 +53,46 @@ public class BillingServer implements Runnable
         }
         finally
         {
+            tryStopServer();
+        }
+    }
+
+    private void tryStopServer()
+    {
+        try
+        {
             server.destroy();
+        }
+        catch (Exception e)
+        {
+            return;
+        }
+    }
+
+    private void join()
+    {
+        try
+        {
+            this.server.join();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void stop()
+    {
+        if (this.server != null)
+        {
+            try
+            {
+                this.server.stop();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 

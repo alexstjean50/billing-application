@@ -10,8 +10,6 @@ import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,59 +62,11 @@ public class TransactionService
                                                                Optional<String> optionalEndMonth,
                                                                Optional<Long> optionalYear)
     {
-        List<Transaction> transactions = this.transactionRepository.findAll();
-
-        if (optionalYear.isPresent())
-        {
-            if (optionalStartMonth.isPresent())
-            {
-                int startMonth = Integer.valueOf(optionalStartMonth.get());
-                transactions = filterTransactionsByStartMonth(transactions, startMonth);
-            }
-
-            if (optionalEndMonth.isPresent())
-            {
-                int endMonth = Integer.valueOf(optionalEndMonth.get());
-                transactions = filterTransactionsByEndMonth(transactions, endMonth);
-            }
-
-            transactions = filterTransactionsByYear(optionalYear.get(), transactions);
-        }
-        else
-        {
-            //TODO À ajuster.
-            throw new RuntimeException();
-        }
+        List<Transaction> transactions = this.transactionRepository.findByFilter(optionalStartMonth,
+                optionalEndMonth, optionalYear);
 
         return transactions.stream()
                 .map(TransactionEntryResponse::create)
                 .collect(Collectors.toList());
-    }
-
-    private List<Transaction> filterTransactionsByStartMonth(List<Transaction> transactions, int startMonth)
-    {
-        transactions = transactions.stream()
-                .filter(transaction -> LocalDateTime.ofInstant(transaction.getDate(), ZoneId.systemDefault())
-                        .getMonthValue() >= startMonth)
-                .collect(Collectors.toList());
-        return transactions;
-    }
-
-    private List<Transaction> filterTransactionsByYear(long year, List<Transaction> transactions)
-    {
-        transactions = transactions.stream()
-                .filter(transaction -> LocalDateTime.ofInstant(transaction.getDate(), ZoneId.systemDefault())
-                        .getYear() == year)
-                .collect(Collectors.toList());
-        return transactions;
-    }
-
-    private List<Transaction> filterTransactionsByEndMonth(List<Transaction> transactions, int endMonth)
-    {
-        transactions = transactions.stream()
-                .filter(transaction -> LocalDateTime.ofInstant(transaction.getDate(), ZoneId.systemDefault())
-                        .getMonthValue() <= endMonth)
-                .collect(Collectors.toList());
-        return transactions;
     }
 }

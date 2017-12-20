@@ -29,6 +29,12 @@ public class BillResource
         this.billService = new BillServiceAssembler().create();
     }
 
+    public BillResource(BillService billService, TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+        this.billService = billService;
+    }
+
     @POST
     public Response createBill(BillCreationRequest request)
     {
