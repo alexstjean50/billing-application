@@ -19,6 +19,11 @@
             <groupId>ca.ulaval.glo4002</groupId>
             <artifactId>billing</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
