@@ -7,6 +7,7 @@ import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionEntryResponse;
 import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
+import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -17,10 +18,12 @@ import java.util.stream.Collectors;
 public class TransactionService
 {
     private final TransactionRepository transactionRepository;
+    private final ClockRepository clockRepository;
 
-    public TransactionService(TransactionRepository transactionRepository)
+    public TransactionService(TransactionRepository transactionRepository, ClockRepository clockRepository)
     {
         this.transactionRepository = transactionRepository;
+        this.clockRepository = clockRepository;
     }
 
     public void logPayment(long clientId, BigDecimal amount)
@@ -41,7 +44,7 @@ public class TransactionService
     private void logTransaction(long clientId, TransactionType transactionType, OperationType operationType, BigDecimal
             amount)
     {
-        Instant date = Instant.now();
+        Instant date = this.clockRepository.retrieveCurrentTime();
 
         BigDecimal amountAppliedToLedger = operationType == OperationType.CREDIT ? amount.multiply(new BigDecimal(-1)) :
                 amount;

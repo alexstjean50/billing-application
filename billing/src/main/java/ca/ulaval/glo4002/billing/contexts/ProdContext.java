@@ -12,6 +12,7 @@ import ca.ulaval.glo4002.billing.persistence.manager.factory.EntityManagerFactor
 import ca.ulaval.glo4002.billing.persistence.repository.account.AccountHibernateRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.bill.BillHibernateRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.client.ClientRestRepository;
+import ca.ulaval.glo4002.billing.persistence.repository.clock.DefaultClockRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.payment.PaymentHibernateRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.product.ProductRestRepository;
 import ca.ulaval.glo4002.billing.persistence.repository.transaction.TransactionHibernateRepository;
@@ -19,6 +20,7 @@ import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
 import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
+import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import ca.ulaval.glo4002.billing.service.repository.payment.PaymentRepository;
 import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
 import org.springframework.web.client.RestTemplate;
@@ -42,6 +44,7 @@ public class ProdContext implements Context
 
     private static void loadRepositories()
     {
+        ServiceLocator.loadService(ClockRepository.class, new DefaultClockRepository());
         loadRestRepositories();
         loadHibernateRepositories();
     }

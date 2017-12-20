@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.contexts.ServiceLocator;
 import ca.ulaval.glo4002.billing.manager.factory.TestEntityManagerFactoryConfigurator;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
@@ -138,20 +139,9 @@ public class TransactionResourceRestTest extends RestTestBase
     public void
     givenTransactionsMadeInDifferentMonths_whenRetrievingTransactions_thenShouldGetFilteredTransactionsOfSpecifiedMonthRange()
     {
-        Instant.now(
-                Clock.fixed(
-                        Instant.parse("2016-01-23T12:34:56Z"), ZoneOffset.systemDefault()
-                )
-        );
-
+        changeTime(Instant.parse("2016-01-23T12:34:56Z"));
         createAndAcceptBill();
-
-        Instant.now(
-                Clock.fixed(
-                        Instant.parse("2017-01-23T12:34:56Z"), ZoneOffset.systemDefault()
-                )
-        );
-
+        changeTime(Instant.parse("2017-01-23T12:34:56Z"));
         createPayment();
 
         List<TransactionEntryResponse> transactionEntryResponses = givenBaseRequest()
@@ -167,6 +157,11 @@ public class TransactionResourceRestTest extends RestTestBase
                 .getEntries();
 
         assertEquals(1, transactionEntryResponses.size());
+    }
+
+    private void changeTime(Instant anInstant)
+    {
+        ServiceLocator.loadService(Clock.class, Clock.fixed(anInstant, ZoneOffset.systemDefault()));
     }
 
     private TransactionEntryResponse retrieveLastInsertedTransaction()
