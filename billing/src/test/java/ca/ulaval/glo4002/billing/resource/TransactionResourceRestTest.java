@@ -20,13 +20,14 @@ import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class TransactionResourceRestTest extends RestTestBase
 {
     private static final String START_MONTH = "01";
-    private static final String END_MONTH = "12";
+    private static final String END_MONTH = "02";
     private static final Long YEAR = 2017L;
     private static final int SOME_CLIENT_ID = 1;
     private static final BigDecimal SOME_PAYMENT_AMOUNT = new BigDecimal(30);
@@ -137,12 +138,12 @@ public class TransactionResourceRestTest extends RestTestBase
 
     @Test
     public void
-    givenTransactionsMadeInDifferentMonths_whenRetrievingTransactions_thenShouldGetFilteredTransactionsOfSpecifiedMonthRange()
+    givenTransactionsMadeInDifferentMonthsAndYears_whenRetrievingTransactions_thenShouldGetFilteredTransactionsOfSpecifiedMonthAndYearRange()
     {
-        changeTime(Instant.parse("2016-01-23T12:34:56Z"));
-        createAndAcceptBill();
-        changeTime(Instant.parse("2017-01-23T12:34:56Z"));
-        createPayment();
+        createPaymentAtSetTime(Instant.parse("2016-12-31T12:34:56Z"));
+        createPaymentAtSetTime(Instant.parse("2017-01-01T12:34:56Z"));
+        createPaymentAtSetTime(Instant.parse("2017-02-01T12:34:56Z"));
+        createPaymentAtSetTime(Instant.parse("2017-03-01T12:34:56Z"));
 
         List<TransactionEntryResponse> transactionEntryResponses = givenBaseRequest()
                 .when()
@@ -156,7 +157,22 @@ public class TransactionResourceRestTest extends RestTestBase
                 .as(TransactionsResponse.class)
                 .getEntries();
 
-        assertEquals(1, transactionEntryResponses.size());
+        assertThatTransactionsAreInDateRange(transactionEntryResponses, Instant.parse("2017-01-01T00:00:00Z"),
+                Instant.parse("2017-02-01T23:59:59Z"));
+    }
+
+    private void assertThatTransactionsAreInDateRange(List<TransactionEntryResponse> transactionEntryResponses,
+                                                      Instant minimumDate, Instant maximumDate)
+    {
+        transactionEntryResponses.forEach(transactionEntryResponse -> assertTrue(transactionEntryResponse.getDate()
+                .isAfter(minimumDate) && transactionEntryResponse.getDate()
+                .isBefore(maximumDate)));
+    }
+
+    private void createPaymentAtSetTime(Instant parse)
+    {
+        changeTime(parse);
+        createPayment();
     }
 
     private void changeTime(Instant anInstant)
