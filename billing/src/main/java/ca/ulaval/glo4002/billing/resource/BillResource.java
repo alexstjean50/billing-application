@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
 import ca.ulaval.glo4002.billing.service.assembler.BillServiceAssembler;
@@ -62,7 +63,7 @@ public class BillResource
 
         BigDecimal billAmount = this.billService.retrieveBillAmount(billNumber);
 
-        this.transactionService.logInvoiceAcceptance(clientId, billAmount);
+        this.transactionService.logTransaction(clientId, billAmount, TransactionType.INVOICE);
 
         return Response.ok()
                 .entity(response)
@@ -79,7 +80,7 @@ public class BillResource
 
         BigDecimal billAmount = this.billService.retrieveBillAmount(billNumber);
 
-        this.transactionService.logInvoiceCancellation(clientId, billAmount);
+        this.transactionService.logTransaction(clientId, billAmount, TransactionType.INVOICE_CANCELLED);
 
         return Response.accepted()
                 .entity(EMPTY_JSON_VALUE)

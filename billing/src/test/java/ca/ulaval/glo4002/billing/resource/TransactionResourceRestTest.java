@@ -108,7 +108,7 @@ public class TransactionResourceRestTest extends RestTestBase
         TransactionEntryResponse transactionEntryResponse = retrieveLastInsertedTransaction();
 
         assertThat(transactionEntryResponse.getAmount()
-                .multiply(new BigDecimal(-1)), Matchers.comparesEqualTo(transactionEntryResponse.getBalance()));
+                .negate(), Matchers.comparesEqualTo(transactionEntryResponse.getBalance()));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.service.PaymentService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
 import ca.ulaval.glo4002.billing.service.assembler.PaymentServiceAssembler;
@@ -47,7 +48,7 @@ public class PaymentResource
 
         PaymentCreationResponse response = this.paymentService.createPayment(request);
 
-        this.transactionService.logPayment(request.clientId, request.amount);
+        this.transactionService.logTransaction(request.clientId, request.amount, TransactionType.PAYMENT);
 
         return Response.status(Response.Status.CREATED)
                 .entity(response)

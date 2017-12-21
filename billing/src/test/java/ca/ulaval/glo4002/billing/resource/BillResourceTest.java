@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
 import org.junit.Before;
@@ -39,6 +40,6 @@ public class BillResourceTest
 
         billResource.acceptBill(SOME_BILL_NUMBER);
 
-        verify(this.transactionService).logInvoiceAcceptance(SOME_CLIENT_ID, SOME_AMOUNT);
+        verify(this.transactionService).logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, TransactionType.INVOICE);
     }
 }

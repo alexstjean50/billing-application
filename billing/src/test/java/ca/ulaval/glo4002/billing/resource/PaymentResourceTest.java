@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.service.PaymentService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
 import ca.ulaval.glo4002.billing.service.dto.request.PaymentCreationRequest;
@@ -45,6 +46,6 @@ public class PaymentResourceTest
 
         paymentResource.createPayment(paymentCreationRequest);
 
-        verify(this.transactionService).logPayment(SOME_CLIENT_ID, SOME_AMOUNT);
+        verify(this.transactionService).logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, TransactionType.PAYMENT);
     }
 }
