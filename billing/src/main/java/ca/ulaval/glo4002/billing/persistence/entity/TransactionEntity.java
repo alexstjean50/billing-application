@@ -49,7 +49,7 @@ public class TransactionEntity implements Serializable
 
     public long getTransactionId()
     {
-        return transactionId;
+        return this.transactionId;
     }
 
     public void setTransactionId(long transactionId)
@@ -59,7 +59,7 @@ public class TransactionEntity implements Serializable
 
     public Instant getDate()
     {
-        return date;
+        return this.date;
     }
 
     public void setDate(Instant date)
@@ -69,7 +69,7 @@ public class TransactionEntity implements Serializable
 
     public TransactionType getTransactionType()
     {
-        return transactionType;
+        return this.transactionType;
     }
 
     public void setTransactionType(TransactionType transactionType)
@@ -79,7 +79,7 @@ public class TransactionEntity implements Serializable
 
     public long getClientId()
     {
-        return clientId;
+        return this.clientId;
     }
 
     public void setClientId(long clientId)
@@ -89,7 +89,7 @@ public class TransactionEntity implements Serializable
 
     public OperationType getOperationType()
     {
-        return operationType;
+        return this.operationType;
     }
 
     public void setOperationType(OperationType operationType)
@@ -99,7 +99,7 @@ public class TransactionEntity implements Serializable
 
     public BigDecimal getAmount()
     {
-        return amount;
+        return this.amount;
     }
 
     public void setAmount(BigDecimal amount)
@@ -109,7 +109,7 @@ public class TransactionEntity implements Serializable
 
     public BigDecimal getBalance()
     {
-        return balance;
+        return this.balance;
     }
 
     public void setBalance(BigDecimal balance)

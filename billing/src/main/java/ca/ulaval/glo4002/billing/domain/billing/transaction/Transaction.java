@@ -29,36 +29,36 @@ public class Transaction
 
     public Identity getTransactionId()
     {
-        return transactionId;
+        return this.transactionId;
     }
 
     public Instant getDate()
     {
-        return date;
+        return this.date;
     }
 
     public TransactionType getTransactionType()
     {
-        return transactionType;
+        return this.transactionType;
     }
 
     public long getClientId()
     {
-        return clientId;
+        return this.clientId;
     }
 
     public OperationType getOperationType()
     {
-        return operationType;
+        return this.operationType;
     }
 
     public Money getAmount()
     {
-        return amount;
+        return this.amount;
     }
 
     public Money getBalance()
     {
-        return balance;
+        return this.balance;
     }
 }

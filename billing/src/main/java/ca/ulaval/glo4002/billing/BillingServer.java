@@ -61,7 +61,7 @@ public class BillingServer implements Runnable
     {
         try
         {
-            server.destroy();
+            this.server.destroy();
         }
         catch (Exception e)
         {

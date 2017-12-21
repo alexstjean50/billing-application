@@ -13,8 +13,8 @@ import java.time.Instant;
 
 public class TransactionFactory
 {
-    private ClockRepository clockRepository;
-    private TransactionRepository transactionRepository;
+    private final ClockRepository clockRepository;
+    private final TransactionRepository transactionRepository;
 
     public TransactionFactory(ClockRepository clockRepository, TransactionRepository transactionRepository)
     {

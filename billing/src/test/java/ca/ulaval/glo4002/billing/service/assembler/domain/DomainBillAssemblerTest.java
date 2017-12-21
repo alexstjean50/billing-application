@@ -42,7 +42,7 @@ public class DomainBillAssemblerTest
     @Before
     public void initializeDomainBillAssembler()
     {
-        domainBillAssembler = new DomainBillAssembler(billRepository, itemRequestAssembler);
+        this.domainBillAssembler = new DomainBillAssembler(this.billRepository, this.itemRequestAssembler);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class DomainBillAssemblerTest
     @Test
     public void whenCreatingBill_thenAllItemRequestsAreConvertedToItems()
     {
-        this.domainBillAssembler.toBill(createBillCreationRequest(SOME_OTHER_DUE_TERM.name()), client);
+        this.domainBillAssembler.toBill(createBillCreationRequest(SOME_OTHER_DUE_TERM.name()), this.client);
 
         verify(this.itemRequestAssembler, times(1)).toDomainModel(anyList());
     }

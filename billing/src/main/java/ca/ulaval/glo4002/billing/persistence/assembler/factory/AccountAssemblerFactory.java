@@ -19,8 +19,8 @@ public class AccountAssemblerFactory
                         BillAssemblerFactory());
     }
 
-    public AccountAssemblerFactory(ClientRepository clientRepository, PaymentAssemblerFactory paymentAssemblerFactory,
-                                   BillAssemblerFactory billAssemblerFactory)
+    private AccountAssemblerFactory(ClientRepository clientRepository, PaymentAssemblerFactory paymentAssemblerFactory,
+                                    BillAssemblerFactory billAssemblerFactory)
     {
         this.clientRepository = clientRepository;
         this.paymentAssemblerFactory = paymentAssemblerFactory;

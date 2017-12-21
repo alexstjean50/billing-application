@@ -34,17 +34,18 @@ public class PaymentResourceTest
     @Before
     public void setUp()
     {
-        paymentResource = new PaymentResource(paymentService, transactionService);
-        paymentCreationRequest = PaymentCreationRequest.create(SOME_CLIENT_ID, SOME_AMOUNT, new PaymentMethod("", ""));
-        paymentCreationResponse = PaymentCreationResponse.create(SOME_PAYMENT_NUMBER);
+        this.paymentResource = new PaymentResource(this.paymentService, this.transactionService);
+        this.paymentCreationRequest = PaymentCreationRequest.create(SOME_CLIENT_ID, SOME_AMOUNT, new PaymentMethod
+                ("", ""));
+        this.paymentCreationResponse = PaymentCreationResponse.create(SOME_PAYMENT_NUMBER);
     }
 
     @Test
     public void whenCreatingPayment_thenShouldLogPaymentTransaction()
     {
-        given(this.paymentService.createPayment(paymentCreationRequest)).willReturn(paymentCreationResponse);
+        given(this.paymentService.createPayment(this.paymentCreationRequest)).willReturn(this.paymentCreationResponse);
 
-        paymentResource.createPayment(paymentCreationRequest);
+        this.paymentResource.createPayment(this.paymentCreationRequest);
 
         verify(this.transactionService).logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, TransactionType.PAYMENT);
     }

@@ -83,31 +83,31 @@ public class TransactionEntryResponse
 
     public Instant getDate()
     {
-        return date;
+        return this.date;
     }
 
     public String getTypeTransaction()
     {
-        return typeTransaction;
+        return this.typeTransaction;
     }
 
     public long getClientId()
     {
-        return clientId;
+        return this.clientId;
     }
 
     public String getTypeOperation()
     {
-        return typeOperation;
+        return this.typeOperation;
     }
 
     public BigDecimal getAmount()
     {
-        return amount;
+        return this.amount;
     }
 
     public BigDecimal getBalance()
     {
-        return balance;
+        return this.balance;
     }
 }

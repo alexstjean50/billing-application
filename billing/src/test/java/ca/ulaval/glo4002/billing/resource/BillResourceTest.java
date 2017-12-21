@@ -17,9 +17,9 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class BillResourceTest
 {
-    public static final long SOME_CLIENT_ID = 1L;
-    public static final int SOME_BILL_NUMBER = 12;
-    public static final BigDecimal SOME_AMOUNT = BigDecimal.TEN;
+    private static final long SOME_CLIENT_ID = 1L;
+    private static final int SOME_BILL_NUMBER = 12;
+    private static final BigDecimal SOME_AMOUNT = BigDecimal.TEN;
     @Mock
     private TransactionService transactionService;
     @Mock
@@ -29,7 +29,7 @@ public class BillResourceTest
     @Before
     public void setUp()
     {
-        billResource = new BillResource(billService, transactionService);
+        this.billResource = new BillResource(this.billService, this.transactionService);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class BillResourceTest
         given(this.billService.retrieveBillAmount(SOME_BILL_NUMBER)).willReturn(SOME_AMOUNT);
         given(this.billService.retrieveRelatedClientId(SOME_BILL_NUMBER)).willReturn(SOME_CLIENT_ID);
 
-        billResource.acceptBill(SOME_BILL_NUMBER);
+        this.billResource.acceptBill(SOME_BILL_NUMBER);
 
         verify(this.transactionService).logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, TransactionType.INVOICE);
     }

@@ -26,7 +26,7 @@ public class TransactionAssemblerTest
     @Before
     public void initializeTransactionAssembler()
     {
-        transactionAssembler = new TransactionAssembler();
+        this.transactionAssembler = new TransactionAssembler();
     }
 
     @Test

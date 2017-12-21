@@ -100,6 +100,7 @@ public class TransactionHibernateRepository implements TransactionRepository
         return transactions;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public synchronized Money retrieveCurrentLedgerBalance()
     {

@@ -14,7 +14,7 @@ public class BillAssemblerFactory
         this(new ItemAssemblerFactory(), new AllocationAssembler());
     }
 
-    public BillAssemblerFactory(ItemAssemblerFactory itemAssemblerFactory, AllocationAssembler allocationAssembler)
+    private BillAssemblerFactory(ItemAssemblerFactory itemAssemblerFactory, AllocationAssembler allocationAssembler)
     {
         this.itemAssemblerFactory = itemAssemblerFactory;
         this.allocationAssembler = allocationAssembler;

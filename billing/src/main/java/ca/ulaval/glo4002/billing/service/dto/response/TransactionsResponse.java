@@ -32,11 +32,11 @@ public class TransactionsResponse
 
     public long getAccountId()
     {
-        return accountId;
+        return this.accountId;
     }
 
     public List<TransactionEntryResponse> getEntries()
     {
-        return entries;
+        return this.entries;
     }
 }

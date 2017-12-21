@@ -26,9 +26,4 @@ public class ServiceLocator
     private ServiceLocator()
     {
     }
-
-    public static void reset()
-    {
-        services.clear();
-    }
 }

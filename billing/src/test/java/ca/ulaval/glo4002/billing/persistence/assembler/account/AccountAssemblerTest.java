@@ -79,7 +79,7 @@ public class AccountAssemblerTest
     {
         int expectedBillEntitiesCount = SOME_COUNT;
         List<Bill> someBills = Collections.nCopies(expectedBillEntitiesCount, SOME_BILL);
-        Account someAccount = Account.create(SOME_ACCOUNT_ID, SOME_CLIENT, SOME_ALLOCATION_STRATEGY, SOME_PAYMENTS,
+        Account someAccount = Account.create(SOME_ACCOUNT_ID, SOME_CLIENT, this.SOME_ALLOCATION_STRATEGY, SOME_PAYMENTS,
                 someBills);
 
         AccountEntity result = this.accountAssembler.toPersistenceModel(someAccount);
@@ -132,7 +132,7 @@ public class AccountAssemblerTest
     @Test
     public void givenSomeAccount_whenConvertedToAccountEntity_thenClientEntityIdMustBeEqualToClientId()
     {
-        Account someAccount = Account.create(SOME_IDENTITY, SOME_CLIENT, SOME_ALLOCATION_STRATEGY);
+        Account someAccount = Account.create(SOME_IDENTITY, SOME_CLIENT, this.SOME_ALLOCATION_STRATEGY);
 
         AccountEntity result = this.accountAssembler.toPersistenceModel(someAccount);
 
@@ -157,7 +157,7 @@ public class AccountAssemblerTest
     {
         long expectedAccountId = SOME_OTHER_ACCOUNT_ID_VALUE;
         Identity someAccountIdentity = new Identity(expectedAccountId);
-        Account someAccount = Account.create(someAccountIdentity, SOME_CLIENT, SOME_ALLOCATION_STRATEGY);
+        Account someAccount = Account.create(someAccountIdentity, SOME_CLIENT, this.SOME_ALLOCATION_STRATEGY);
 
         AccountEntity result = this.accountAssembler.toPersistenceModel(someAccount);
 
@@ -178,7 +178,7 @@ public class AccountAssemblerTest
 
     private Account createSomeAccount()
     {
-        return Account.create(SOME_IDENTITY, SOME_CLIENT, SOME_ALLOCATION_STRATEGY);
+        return Account.create(SOME_IDENTITY, SOME_CLIENT, this.SOME_ALLOCATION_STRATEGY);
     }
 
     private AccountEntity createSomeAccountEntity()
