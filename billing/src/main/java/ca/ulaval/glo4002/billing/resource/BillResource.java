@@ -107,7 +107,7 @@ public class BillResource
 
         this.transactionService.logTransaction(clientId, billAmount, TransactionType.INVOICE_CANCELLED);
 
-        return Response.noContent()
+        return Response.accepted()
                 .build();
     }
 }
