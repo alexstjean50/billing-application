@@ -33,7 +33,6 @@ import java.math.BigDecimal;
 @Produces(MediaType.APPLICATION_JSON)
 public class BillResource
 {
-    private static final String EMPTY_JSON_VALUE = "{}";
     private final BillService billService;
     private final TransactionService transactionService;
 
