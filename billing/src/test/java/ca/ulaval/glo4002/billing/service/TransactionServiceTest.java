@@ -2,7 +2,7 @@ package ca.ulaval.glo4002.billing.service;
 
 import ca.ulaval.glo4002.billing.domain.billing.transaction.Transaction;
 import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
-import ca.ulaval.glo4002.billing.service.assembler.domain.TransactionFactory;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainTransactionAssembler;
 import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +25,7 @@ public class TransactionServiceTest
     private static final Optional<String> SOME_MONTH = Optional.of("2");
     private static final Optional<Long> SOME_YEAR = Optional.of(2017L);
     @Mock
-    private TransactionFactory transactionFactory;
+    private DomainTransactionAssembler domainTransactionAssembler;
     @Mock
     private TransactionRepository transactionRepository;
     @Mock
@@ -35,7 +35,7 @@ public class TransactionServiceTest
     @Before
     public void initializeTransactionService()
     {
-        this.transactionService = new TransactionService(this.transactionRepository, this.transactionFactory);
+        this.transactionService = new TransactionService(this.transactionRepository, this.domainTransactionAssembler);
     }
 
     @Test
@@ -43,13 +43,13 @@ public class TransactionServiceTest
     {
         this.transactionService.logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, SOME_TRANSACTION_TYPE);
 
-        verify(this.transactionFactory).toNewTransaction(SOME_CLIENT_ID, SOME_AMOUNT, SOME_TRANSACTION_TYPE);
+        verify(this.domainTransactionAssembler).toNewTransaction(SOME_CLIENT_ID, SOME_AMOUNT, SOME_TRANSACTION_TYPE);
     }
 
     @Test
     public void whenLoggingTransaction_thenShouldSaveNewTransaction()
     {
-        given(this.transactionFactory.toNewTransaction(SOME_CLIENT_ID, SOME_AMOUNT, SOME_TRANSACTION_TYPE))
+        given(this.domainTransactionAssembler.toNewTransaction(SOME_CLIENT_ID, SOME_AMOUNT, SOME_TRANSACTION_TYPE))
                 .willReturn(this.transaction);
 
         this.transactionService.logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, SOME_TRANSACTION_TYPE);

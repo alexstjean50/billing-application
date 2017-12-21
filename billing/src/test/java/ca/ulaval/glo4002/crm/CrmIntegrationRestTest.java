@@ -2,7 +2,7 @@ package ca.ulaval.glo4002.crm;
 
 import ca.ulaval.glo4002.billing.persistence.entity.ClientEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.ProductEntity;
-import ca.ulaval.glo4002.billing.resource.RestTestBase;
+import ca.ulaval.glo4002.commons.RestTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

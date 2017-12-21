@@ -2,7 +2,7 @@ package ca.ulaval.glo4002.billing.service;
 
 import ca.ulaval.glo4002.billing.domain.billing.transaction.Transaction;
 import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
-import ca.ulaval.glo4002.billing.service.assembler.domain.TransactionFactory;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainTransactionAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionEntryResponse;
 import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 
@@ -14,17 +14,18 @@ import java.util.stream.Collectors;
 public class TransactionService
 {
     private final TransactionRepository transactionRepository;
-    private final TransactionFactory transactionFactory;
+    private final DomainTransactionAssembler domainTransactionAssembler;
 
-    public TransactionService(TransactionRepository transactionRepository, TransactionFactory transactionFactory)
+    public TransactionService(TransactionRepository transactionRepository, DomainTransactionAssembler
+            domainTransactionAssembler)
     {
         this.transactionRepository = transactionRepository;
-        this.transactionFactory = transactionFactory;
+        this.domainTransactionAssembler = domainTransactionAssembler;
     }
 
     public void logTransaction(long clientId, BigDecimal amount, TransactionType transactionType)
     {
-        Transaction transaction = this.transactionFactory.toNewTransaction(clientId, amount, transactionType);
+        Transaction transaction = this.domainTransactionAssembler.toNewTransaction(clientId, amount, transactionType);
 
         this.transactionRepository.save(transaction);
     }

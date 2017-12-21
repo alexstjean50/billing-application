@@ -9,6 +9,7 @@ import ca.ulaval.glo4002.billing.service.dto.request.PaymentMethod;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionEntryResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionsResponse;
+import ca.ulaval.glo4002.commons.RestTestBase;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,19 +121,6 @@ public class TransactionResourceRestTest extends RestTestBase
         TransactionEntryResponse transactionEntryResponse = retrieveLastInsertedTransaction();
 
         assertThat(transactionEntryResponse.getAmount(),
-                Matchers.comparesEqualTo(transactionEntryResponse.getBalance()));
-    }
-
-    @Test
-    public void
-    givenAnEmptyInitialBalance_whenAddingDebitAndCreditTransactions_thenBalanceShouldBeSumOfBothTransactions()
-    {
-        createAndAcceptBill();
-        createPayment();
-
-        TransactionEntryResponse transactionEntryResponse = retrieveLastInsertedTransaction();
-
-        assertThat(SOME_PAYMENT_AMOUNT.subtract(SOME_BILL_AMOUNT),
                 Matchers.comparesEqualTo(transactionEntryResponse.getBalance()));
     }
 

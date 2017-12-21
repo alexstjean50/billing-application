@@ -182,7 +182,8 @@ public class EntityManagerFactoryConfigurator
                 BillEntity.class,
                 ItemEntity.class,
                 PaymentEntity.class,
-                PaymentMethodEntity.class
+                PaymentMethodEntity.class,
+                TransactionEntity.class
         };
     }
 }

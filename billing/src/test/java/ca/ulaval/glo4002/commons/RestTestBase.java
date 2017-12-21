@@ -1,5 +1,6 @@
-package ca.ulaval.glo4002.billing.resource;
+package ca.ulaval.glo4002.commons;
 
+import ca.ulaval.glo4002.billing.resource.RestTestSuite;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 

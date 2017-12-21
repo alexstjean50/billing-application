@@ -11,12 +11,12 @@ import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public class TransactionFactory
+public class DomainTransactionAssembler
 {
     private final ClockRepository clockRepository;
     private final TransactionRepository transactionRepository;
 
-    public TransactionFactory(ClockRepository clockRepository, TransactionRepository transactionRepository)
+    public DomainTransactionAssembler(ClockRepository clockRepository, TransactionRepository transactionRepository)
     {
         this.clockRepository = clockRepository;
         this.transactionRepository = transactionRepository;
