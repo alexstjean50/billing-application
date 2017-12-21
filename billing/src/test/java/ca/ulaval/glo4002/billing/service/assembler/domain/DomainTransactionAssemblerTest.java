@@ -72,4 +72,29 @@ public class DomainTransactionAssemblerTest
 
         assertEquals(transaction.getOperationType(), OperationType.DEBIT);
     }
+
+    @Test
+    public void givenADebitTransaction_whenAssemblingNewTransaction_thenShouldAddAmountToBalance()
+    {
+        Transaction transaction =
+                this.domainTransactionAssembler.toNewTransaction(SOME_CLIENT_ID, SOME_AMOUNT,
+                        TransactionType.PAYMENT);
+
+        assertEquals(transaction.getAmount()
+                .asBigDecimal(), transaction.getBalance()
+                .asBigDecimal());
+    }
+
+    @Test
+    public void givenACreditTransaction_whenAssemblingNewTransaction_thenShouldAddNegativeAmountToBalance()
+    {
+        Transaction transaction =
+                this.domainTransactionAssembler.toNewTransaction(SOME_CLIENT_ID, SOME_AMOUNT,
+                        TransactionType.INVOICE);
+
+        assertEquals(transaction.getAmount()
+                .asBigDecimal()
+                .negate(), transaction.getBalance()
+                .asBigDecimal());
+    }
 }

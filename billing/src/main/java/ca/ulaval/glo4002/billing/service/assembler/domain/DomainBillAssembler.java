@@ -25,12 +25,12 @@ public class DomainBillAssembler
     public Bill toBill(BillCreationRequest request, Client client)
     {
         long billNumber = this.billRepository.retrieveNextBillNumber();
-        List<Item> items = this.itemRequestAssembler.toDomainModel(request.itemRequests);
+        List<Item> items = this.itemRequestAssembler.toDomainModel(request.getItemRequests());
 
-        DueTerm appliedDueTerm = Optional.ofNullable(request.dueTerm)
+        DueTerm appliedDueTerm = Optional.ofNullable(request.getDueTerm())
                 .map(DueTerm::valueOf)
                 .orElseGet(client::getDefaultTerm);
 
-        return Bill.create(billNumber, request.creationDate, appliedDueTerm, items);
+        return Bill.create(billNumber, request.getCreationDate(), appliedDueTerm, items);
     }
 }

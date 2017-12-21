@@ -28,13 +28,13 @@ public class Payment implements Comparable<Payment>
         this.allocations = allocations;
     }
 
-    public Money calculateUnallocatedBalance()
+    public Money getUnallocatedBalance()
     {
-        Money unallocatedAmount = this.amount.subtract(this.calculateAllocatedAmount());
+        Money unallocatedAmount = this.amount.subtract(this.getAllocatedAmount());
         return unallocatedAmount.max(Money.ZERO);
     }
 
-    private Money calculateAllocatedAmount()
+    private Money getAllocatedAmount()
     {
         return this.allocations.stream()
                 .map(Allocation::getAllocatedAmount)
@@ -50,15 +50,27 @@ public class Payment implements Comparable<Payment>
     public void removeAllocations(long billNumber)
     {
         this.allocations = this.allocations.stream()
-                .filter(allocation -> allocation.getBillNumber() != billNumber)
+                .filter(allocation -> allocation.isBillNumberDifferent(billNumber))
                 .collect(Collectors.toList());
     }
 
     @Override
     public int compareTo(Payment that)
     {
-        return this.getPaymentDate()
-                .isBefore(that.getPaymentDate()) ? -1 : 1;
+        if (this.getPaymentDate()
+                .equals(that.getPaymentDate()))
+        {
+            return 0;
+        }
+        else if (this.getPaymentDate()
+                .isBefore(that.getPaymentDate()))
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
     }
 
     public Instant getPaymentDate()
@@ -68,7 +80,7 @@ public class Payment implements Comparable<Payment>
 
     public boolean isCompleted()
     {
-        return this.calculateAllocatedAmount()
+        return this.getAllocatedAmount()
                 .isGreaterOrEqualTo(this.amount);
     }
 

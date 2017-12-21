@@ -25,11 +25,10 @@ public class DomainTransactionAssembler
     public Transaction toNewTransaction(long clientId, BigDecimal amount, TransactionType transactionType)
     {
         Instant date = this.clockRepository.retrieveCurrentTime();
-
         OperationType operationType = retrieveOperationType(transactionType);
-
         BigDecimal amountAppliedToLedger = operationType == OperationType.CREDIT ? amount.negate() : amount;
         Money balance = calculateCurrentLedgerBalance(Money.valueOf(amountAppliedToLedger));
+
         return new Transaction(Identity.EMPTY, date, transactionType, clientId, operationType,
                 Money.valueOf(amount), balance);
     }

@@ -44,13 +44,11 @@ public class DomainPaymentAssemblerTest
     @Test
     public void whenReceivePayment_thenNextBillNumberRetrieved()
     {
-        this.domainPaymentAssembler.toNewPayment(createPaymentCreationRequest());
+        PaymentCreationRequest paymentCreationRequest =
+                new PaymentCreationRequest(SOME_CLIENT_ID, SOME_AMOUNT, SOME_PAYMENT_METHOD);
+
+        this.domainPaymentAssembler.toNewPayment(paymentCreationRequest);
 
         verify(this.paymentRepository, times(1)).retrieveNextPaymentNumber();
-    }
-
-    private PaymentCreationRequest createPaymentCreationRequest()
-    {
-        return PaymentCreationRequest.create(SOME_CLIENT_ID, SOME_AMOUNT, SOME_PAYMENT_METHOD);
     }
 }

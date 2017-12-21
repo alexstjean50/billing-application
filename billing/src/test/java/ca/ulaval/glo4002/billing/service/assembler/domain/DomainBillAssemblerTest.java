@@ -64,7 +64,7 @@ public class DomainBillAssemblerTest
 
     private BillCreationRequest createBillCreationRequest(String dueTerm)
     {
-        return BillCreationRequest.create(SOME_CLIENT_ID, SOME_DATE, dueTerm,
+        return new BillCreationRequest(SOME_CLIENT_ID, SOME_DATE, dueTerm,
                 Collections.nCopies(3, this.itemRequest));
     }
 }

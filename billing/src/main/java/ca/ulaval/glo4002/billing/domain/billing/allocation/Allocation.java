@@ -23,6 +23,11 @@ public class Allocation
         this.creationDate = creationDate;
     }
 
+    public boolean isBillNumberDifferent(long billNumber)
+    {
+        return this.billNumber != billNumber;
+    }
+
     @Override
     public int hashCode()
     {

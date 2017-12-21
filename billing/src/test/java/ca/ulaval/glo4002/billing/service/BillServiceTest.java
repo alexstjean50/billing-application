@@ -10,6 +10,7 @@ import ca.ulaval.glo4002.billing.service.dto.request.ItemRequest;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
+import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +18,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Collections;
 
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BillServiceTest
@@ -46,12 +50,18 @@ public class BillServiceTest
     private AccountRetriever accountRetriever;
     @Mock
     private ItemRequest itemRequest;
+    @Mock
+    private ClockRepository clockRepository;
+    private Instant now;
     private BillService billService;
 
     @Before
     public void initializeEmptyBillServiceAndBillCreationRequest()
     {
-        this.billService = new BillService(this.accountRepository, this.domainBillAssembler,
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        this.now = Instant.now(clock);
+        given(this.clockRepository.retrieveCurrentTime()).willReturn(this.now);
+        this.billService = new BillService(this.accountRepository, this.clockRepository, this.domainBillAssembler,
                 this.billCreationResponseAssembler, this.billAcceptationResponseAssembler,
                 this.accountRetriever);
     }
@@ -59,7 +69,7 @@ public class BillServiceTest
     @Test
     public void whenCreatingBill_thenRetrieveClientAccount()
     {
-        this.setSuccessfulBehaviorsForCreationRequest();
+        given(this.accountRetriever.retrieveClientAccount(SOME_CLIENT_ID)).willReturn(this.account);
         BillCreationRequest billCreationRequest = createBillCreationRequest();
 
         this.billService.createBill(billCreationRequest);
@@ -84,7 +94,7 @@ public class BillServiceTest
 
         this.billService.cancelBill(SOME_BILL_NUMBER);
 
-        verify(this.account).cancelBill(SOME_BILL_NUMBER);
+        verify(this.account).cancelBill(SOME_BILL_NUMBER, this.now);
     }
 
     @Test
@@ -100,7 +110,8 @@ public class BillServiceTest
     @Test
     public void whenAcceptingBill_thenShouldRetrieveAccount()
     {
-        setSuccessfulBehaviorsForAcceptationRequest();
+        given(this.accountRepository.findByBillNumber(SOME_BILL_NUMBER)).willReturn(this.account);
+
         this.billService.acceptBill(SOME_BILL_NUMBER);
 
         verify(this.accountRepository).findByBillNumber(SOME_BILL_NUMBER);
@@ -117,17 +128,17 @@ public class BillServiceTest
     @Test
     public void whenAcceptingBill_thenBillShouldBeAccept()
     {
-        setSuccessfulBehaviorsForAcceptationRequest();
+        given(this.accountRepository.findByBillNumber(SOME_BILL_NUMBER)).willReturn(this.account);
 
         this.billService.acceptBill(SOME_BILL_NUMBER);
 
-        verify(this.account).acceptBill(eq(SOME_BILL_NUMBER), any());
+        verify(this.account).acceptBill(SOME_BILL_NUMBER, this.now);
     }
 
     @Test
     public void whenSuccessfullyAcceptingBill_thenAccountShouldBeSaved()
     {
-        setSuccessfulBehaviorsForAcceptationRequest();
+        given(this.accountRepository.findByBillNumber(SOME_BILL_NUMBER)).willReturn(this.account);
 
         this.billService.acceptBill(SOME_BILL_NUMBER);
 
@@ -136,17 +147,7 @@ public class BillServiceTest
 
     private BillCreationRequest createBillCreationRequest()
     {
-        return BillCreationRequest.create(SOME_CLIENT_ID, SOME_CREATION_DATE, SOME_DUE_TERM.name(),
+        return new BillCreationRequest(SOME_CLIENT_ID, SOME_CREATION_DATE, SOME_DUE_TERM.name(),
                 Collections.nCopies(SOME_LIST_SIZE, this.itemRequest));
-    }
-
-    private void setSuccessfulBehaviorsForCreationRequest()
-    {
-        given(this.accountRetriever.retrieveClientAccount(SOME_CLIENT_ID)).willReturn(this.account);
-    }
-
-    private void setSuccessfulBehaviorsForAcceptationRequest()
-    {
-        given(this.accountRepository.findByBillNumber(SOME_BILL_NUMBER)).willReturn(this.account);
     }
 }

@@ -1,9 +1,12 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.contexts.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.TransactionService;
-import ca.ulaval.glo4002.billing.service.assembler.TransactionServiceAssembler;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainTransactionAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionEntryResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.TransactionsResponse;
+import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
+import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.*;
@@ -20,7 +23,12 @@ public class TransactionResource
 
     public TransactionResource()
     {
-        this.transactionService = new TransactionServiceAssembler().create();
+        TransactionRepository transactionRepository = ServiceLocator.getService(TransactionRepository.class);
+        ClockRepository clockRepository = ServiceLocator.getService(ClockRepository.class);
+        DomainTransactionAssembler domainTransactionAssembler = new DomainTransactionAssembler(clockRepository,
+                transactionRepository);
+
+        this.transactionService = new TransactionService(transactionRepository, domainTransactionAssembler);
     }
 
     @GET

@@ -68,7 +68,7 @@ public class DefaultAllocationStrategyTest
     {
         given(this.bill.isAllocatable()).willReturn(false);
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, this.someDate);
 
         verify(this.bill, never()).addAllocation(any());
     }
@@ -78,7 +78,7 @@ public class DefaultAllocationStrategyTest
     {
         given(this.payment.isCompleted()).willReturn(true);
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, this.someDate);
 
         verify(this.payment, never()).addAllocation(any());
     }
@@ -88,7 +88,7 @@ public class DefaultAllocationStrategyTest
     {
         given(this.bill.isAllocatable()).willReturn(true, false);
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, this.someDate);
 
         verify(this.bill).addAllocation(any());
     }
@@ -98,7 +98,7 @@ public class DefaultAllocationStrategyTest
     {
         given(this.bill.isAllocatable()).willReturn(true, false);
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, this.someDate);
 
         verify(this.payment, times(this.bills.size())).addAllocation(any());
     }
@@ -108,7 +108,7 @@ public class DefaultAllocationStrategyTest
     {
         given(this.anotherBill.calculateExpectedPaymentDate()).willReturn(this.someOlderDate);
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, this.someDate);
 
         InOrder inOrder = inOrder(this.anotherBill, this.bill);
 
@@ -124,7 +124,7 @@ public class DefaultAllocationStrategyTest
         given(this.anotherPayment.getPaymentDate()).willReturn(this.someOlderDate);
         given(this.anotherPayment.isCompleted()).willReturn(false, false, true);
 
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, this.someDate);
 
         InOrder inOrder = inOrder(this.anotherPayment, this.payment);
 
@@ -138,7 +138,7 @@ public class DefaultAllocationStrategyTest
     {
         given(payment.getPaymentDate()).willReturn(this.someDate);
         when(payment.compareTo(any(Payment.class))).thenCallRealMethod();
-        given(payment.calculateUnallocatedBalance()).willReturn(SOME_AMOUNT);
+        given(payment.getUnallocatedBalance()).willReturn(SOME_AMOUNT);
         given(payment.isCompleted()).willReturn(false);
     }
 

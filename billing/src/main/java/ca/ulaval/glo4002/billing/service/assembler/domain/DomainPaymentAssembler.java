@@ -24,9 +24,9 @@ public class DomainPaymentAssembler
     {
         long paymentNumber = this.paymentRepository.retrieveNextPaymentNumber();
 
-        PaymentMethod paymentMethod = new PaymentMethod(Identity.EMPTY, request.paymentMethod.account,
-                PaymentMethodSource.valueOf(request.paymentMethod.source));
-        return new Payment(Identity.EMPTY, paymentNumber, Money.valueOf(request.amount),
+        PaymentMethod paymentMethod = new PaymentMethod(Identity.EMPTY, request.getPaymentMethod().account,
+                PaymentMethodSource.valueOf(request.getPaymentMethod().source));
+        return new Payment(Identity.EMPTY, paymentNumber, Money.valueOf(request.getAmount()),
                 Instant.now(), paymentMethod, new ArrayList<>());
     }
 }

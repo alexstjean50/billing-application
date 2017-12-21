@@ -5,7 +5,6 @@ import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +83,7 @@ public class Bill implements Comparable<Bill>
             throw new BillNotYetAcceptedException("No expected payment, because the bill isn't " +
                     "accepted yet.");
         }
-        return this.effectiveDate.plus(Duration.ofDays(this.dueTerm.daysToPay));
+        return this.effectiveDate.plus(this.dueTerm.asDays());
     }
 
     public boolean isAccepted()
@@ -138,7 +137,18 @@ public class Bill implements Comparable<Bill>
     @Override
     public int compareTo(Bill that)
     {
-        return calculateExpectedPaymentDate().isBefore(that.calculateExpectedPaymentDate()) ? -1 : 1;
+        if (calculateExpectedPaymentDate().equals(that.calculateExpectedPaymentDate()))
+        {
+            return 0;
+        }
+        else if (calculateExpectedPaymentDate().isBefore(that.calculateExpectedPaymentDate()))
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
     }
 
     public long getBillNumber()

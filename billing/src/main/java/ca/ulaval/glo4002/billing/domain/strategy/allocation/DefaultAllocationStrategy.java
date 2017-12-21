@@ -4,7 +4,7 @@ import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.persistence.identity.Identity;
+import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAllocationAssembler;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -14,9 +14,17 @@ import java.util.stream.Collectors;
 
 public class DefaultAllocationStrategy implements AllocationStrategy
 {
-    @Override
-    public void allocate(List<Bill> bills, List<Payment> payments)
+    private final DomainAllocationAssembler domainAllocationAssembler;
+
+    public DefaultAllocationStrategy()
     {
+        this.domainAllocationAssembler = new DomainAllocationAssembler();
+    }
+
+    @Override
+    public void allocate(List<Bill> bills, List<Payment> payments, Instant currentTime)
+    {
+        this.domainAllocationAssembler.setCurrentTime(currentTime);
         List<Bill> billsToAllocate = this.retrieveAllocatableBills(bills);
         List<Payment> paymentsToAllocate = this.retrieveAllocatablePayments(payments);
 
@@ -62,8 +70,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy
     {
         Money allocatedAmount = this.retrieveMaximumPossibleAllocationAmount(bill, payment);
 
-        Allocation allocation = new Allocation(Identity.EMPTY, bill.getBillNumber(),
-                allocatedAmount, Instant.now());
+        Allocation allocation = this.domainAllocationAssembler.toNewAllocation(bill, allocatedAmount);
 
         bill.addAllocation(allocation);
         payment.addAllocation(allocation);
@@ -71,7 +78,7 @@ public class DefaultAllocationStrategy implements AllocationStrategy
 
     private Money retrieveMaximumPossibleAllocationAmount(Bill bill, Payment payment)
     {
-        return payment.calculateUnallocatedBalance()
+        return payment.getUnallocatedBalance()
                 .min(bill.calculateUnpaidBalance());
     }
 }

@@ -186,7 +186,7 @@ public class TransactionResourceRestTest extends RestTestBase
     private void createAndAcceptBill()
     {
         ItemRequest table = new ItemRequest(SOME_BILL_AMOUNT, "Table", 1, 1);
-        BillCreationRequest billCreationRequest = BillCreationRequest.create(SOME_CLIENT_ID, Instant.now(),
+        BillCreationRequest billCreationRequest = new BillCreationRequest(SOME_CLIENT_ID, Instant.now(),
                 "IMMEDIATE", Collections.singletonList(table));
         long billNumber = createNewSubmission(billCreationRequest);
         acceptBill(billNumber);
@@ -194,9 +194,8 @@ public class TransactionResourceRestTest extends RestTestBase
 
     private void createPayment()
     {
-        PaymentCreationRequest paymentCreationRequest = PaymentCreationRequest.create(SOME_CLIENT_ID,
-                SOME_PAYMENT_AMOUNT,
-                new PaymentMethod("23", "CHECK"));
+        PaymentCreationRequest paymentCreationRequest = new PaymentCreationRequest(SOME_CLIENT_ID,
+                SOME_PAYMENT_AMOUNT, new PaymentMethod("23", "CHECK"));
 
         givenBaseRequest().body(paymentCreationRequest)
                 .post("/payments");

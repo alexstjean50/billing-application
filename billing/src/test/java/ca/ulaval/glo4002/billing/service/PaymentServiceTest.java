@@ -8,6 +8,7 @@ import ca.ulaval.glo4002.billing.service.dto.request.PaymentMethod;
 import ca.ulaval.glo4002.billing.service.dto.response.PaymentCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.PaymentCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
+import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,9 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -41,13 +44,18 @@ public class PaymentServiceTest
     private DomainPaymentAssembler domainPaymentAssembler;
     @Mock
     private Payment payment;
+    @Mock
+    private ClockRepository clockRepository;
+    private Instant now;
 
     @Before
     public void initializePaymentService()
     {
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        this.now = Instant.now(clock);
         PaymentCreationResponseAssembler paymentCreationResponseAssembler = new PaymentCreationResponseAssembler();
         this.paymentService = new PaymentService(this.accountRepository, this.domainPaymentAssembler,
-                paymentCreationResponseAssembler, this.accountRetriever);
+                paymentCreationResponseAssembler, this.accountRetriever, this.clockRepository);
     }
 
     @Test
@@ -66,6 +74,7 @@ public class PaymentServiceTest
     @Test
     public void whenReceivePayment_thenPaymentAddedToAccount()
     {
+        given(this.clockRepository.retrieveCurrentTime()).willReturn(this.now);
         given(this.accountRetriever.retrieveClientAccount(SOME_CLIENT_ID)).willReturn(this.account);
         given(this.payment.getPaymentNumber()).willReturn(SOME_PAYMENT_NUMBER);
         PaymentCreationRequest paymentCreationRequest = createPaymentCreationRequest();
@@ -73,7 +82,7 @@ public class PaymentServiceTest
 
         this.paymentService.createPayment(paymentCreationRequest);
 
-        verify(this.account).addPayment(notNull());
+        verify(this.account).addPayment(this.payment, this.now);
     }
 
     @Test
@@ -106,6 +115,6 @@ public class PaymentServiceTest
 
     private PaymentCreationRequest createPaymentCreationRequest()
     {
-        return PaymentCreationRequest.create(SOME_CLIENT_ID, SOME_AMOUNT, SOME_PAYMENT_METHOD);
+        return new PaymentCreationRequest(SOME_CLIENT_ID, SOME_AMOUNT, SOME_PAYMENT_METHOD);
     }
 }

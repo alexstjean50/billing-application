@@ -53,12 +53,12 @@ public class Account
         this.bills.add(bill);
     }
 
-    public void cancelBill(long billNumber)
+    public void cancelBill(long billNumber, Instant currentDate)
     {
         Bill bill = findAcceptedBillByNumber(billNumber);
         bill.cancel();
         this.payments.forEach(payment -> payment.removeAllocations(billNumber));
-        allocate();
+        allocate(currentDate);
     }
 
     private Bill findAcceptedBillByNumber(long billNumber)
@@ -76,17 +76,17 @@ public class Account
                 .asBigDecimal();
     }
 
-    public void addPayment(Payment payment)
+    public void addPayment(Payment payment, Instant currentTime)
     {
         this.payments.add(payment);
-        allocate();
+        allocate(currentTime);
     }
 
     public Bill acceptBill(long billNumber, Instant acceptedDate)
     {
         Bill acceptedBill = this.findBillByNumber(billNumber);
         acceptedBill.accept(acceptedDate);
-        allocate();
+        allocate(acceptedDate);
         return acceptedBill;
     }
 
@@ -98,9 +98,9 @@ public class Account
                 .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
     }
 
-    private void allocate()
+    private void allocate(Instant currentDate)
     {
-        this.allocationStrategy.allocate(this.bills, this.payments);
+        this.allocationStrategy.allocate(this.bills, this.payments, currentDate);
     }
 
     public List<Payment> getPayments()

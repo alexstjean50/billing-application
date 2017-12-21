@@ -5,12 +5,15 @@ import ca.ulaval.glo4002.billing.domain.billing.client.Client;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
 import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +34,14 @@ public class AccountTest
     private Bill bill;
     @Mock
     private AllocationStrategy allocationStrategy;
+    private Instant someDate;
+
+    @Before
+    public void initializeTime()
+    {
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        this.someDate = Instant.now(clock);
+    }
 
     @Test
     public void whenCreatingABill_thenBillShouldBeAddedToAccount()
@@ -65,7 +76,7 @@ public class AccountTest
 
         account.acceptBill(SOME_BILL_NUMBER, SOME_DATE);
 
-        verify(this.allocationStrategy).allocate(any(), any());
+        verify(this.allocationStrategy).allocate(any(), any(), any());
     }
 
     @Test
@@ -100,7 +111,7 @@ public class AccountTest
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithPayments(this.bill, Collections.singletonList(SOME_PAYMENT));
 
-        account.cancelBill(SOME_BILL_NUMBER);
+        account.cancelBill(SOME_BILL_NUMBER, this.someDate);
 
         account.getPayments()
                 .forEach(payment -> verify(payment).removeAllocations(SOME_BILL_NUMBER));
@@ -113,7 +124,7 @@ public class AccountTest
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
-        account.cancelBill(SOME_BILL_NUMBER);
+        account.cancelBill(SOME_BILL_NUMBER, this.someDate);
 
         verify(this.bill).cancel();
     }
@@ -125,9 +136,9 @@ public class AccountTest
         given(this.bill.isAccepted()).willReturn(true);
         Account account = createAccountWithABill(this.bill);
 
-        account.cancelBill(SOME_BILL_NUMBER);
+        account.cancelBill(SOME_BILL_NUMBER, this.someDate);
 
-        verify(this.allocationStrategy).allocate(account.getBills(), account.getPayments());
+        verify(this.allocationStrategy).allocate(account.getBills(), account.getPayments(), this.someDate);
     }
 
     @Test(expected = DomainAccountBillNotFoundException.class)

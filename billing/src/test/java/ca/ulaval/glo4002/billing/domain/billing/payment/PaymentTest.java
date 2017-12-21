@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
@@ -57,7 +56,7 @@ public class PaymentTest
     {
         Money expectedAmount = SOME_AMOUNT.subtract(SOME_ALLOCATED_AMOUNT);
 
-        Money balanceCalculationResult = this.payment.calculateUnallocatedBalance();
+        Money balanceCalculationResult = this.payment.getUnallocatedBalance();
 
         assertEquals(expectedAmount, balanceCalculationResult);
     }
@@ -67,7 +66,7 @@ public class PaymentTest
     {
         this.payment.addAllocation(createAnotherAllocation());
 
-        Money balanceCalculationResult = this.payment.calculateUnallocatedBalance();
+        Money balanceCalculationResult = this.payment.getUnallocatedBalance();
 
         assertTrue(balanceCalculationResult.isGreaterOrEqualTo(Money.ZERO));
     }
@@ -91,7 +90,7 @@ public class PaymentTest
     {
         Allocation allocationWithOtherBillNumber = mock(Allocation.class);
         this.payment.addAllocation(allocationWithOtherBillNumber);
-        given(allocationWithOtherBillNumber.getBillNumber()).willReturn(SOME_OTHER_BILL_NUMBER);
+        given(allocationWithOtherBillNumber.isBillNumberDifferent(SOME_BILL_NUMBER)).willReturn(true);
 
         this.payment.removeAllocations(SOME_BILL_NUMBER);
 
@@ -100,8 +99,10 @@ public class PaymentTest
 
     private Payment createAPayment()
     {
+        ArrayList<Allocation> allocations = new ArrayList<>();
+        allocations.add(this.createAnAllocation());
         return new Payment(SOME_IDENTITY, SOME_PAYMENT_NUMBER, SOME_AMOUNT, SOME_DATE, SOME_PAYMENT_METHOD,
-                new ArrayList<>(Collections.singletonList(this.createAnAllocation())));
+                allocations);
     }
 
     private Allocation createAnAllocation()

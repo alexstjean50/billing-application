@@ -35,7 +35,7 @@ public class PaymentResourceTest
     public void setUp()
     {
         this.paymentResource = new PaymentResource(this.paymentService, this.transactionService);
-        this.paymentCreationRequest = PaymentCreationRequest.create(SOME_CLIENT_ID, SOME_AMOUNT, new PaymentMethod
+        this.paymentCreationRequest = new PaymentCreationRequest(SOME_CLIENT_ID, SOME_AMOUNT, new PaymentMethod
                 ("", ""));
         this.paymentCreationResponse = PaymentCreationResponse.create(SOME_PAYMENT_NUMBER);
     }
