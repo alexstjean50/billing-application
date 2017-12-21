@@ -9,7 +9,6 @@ import ca.ulaval.glo4002.billing.service.assembler.domain.DomainBillAssembler;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainTransactionAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.BillCreationRequest;
 import ca.ulaval.glo4002.billing.service.dto.request.assembler.ItemRequestAssembler;
-import ca.ulaval.glo4002.billing.service.dto.request.validation.RequestValidator;
 import ca.ulaval.glo4002.billing.service.dto.response.BillAcceptationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
@@ -23,6 +22,7 @@ import ca.ulaval.glo4002.billing.service.repository.product.ProductRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 import ca.ulaval.glo4002.billing.service.validator.ProductValidator;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -69,15 +69,8 @@ public class BillResource
     }
 
     @POST
-    public Response createBill(BillCreationRequest request)
+    public Response createBill(@Valid BillCreationRequest request)
     {
-        RequestValidator requestValidator = new RequestValidator<>(request);
-
-        if (!requestValidator.isRequestValid())
-        {
-            return requestValidator.generateValidationErrorResponse();
-        }
-
         BillCreationResponse response = this.billService.createBill(request);
 
         return Response.status(Response.Status.CREATED)
