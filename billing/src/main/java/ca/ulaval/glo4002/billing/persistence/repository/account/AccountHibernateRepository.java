@@ -10,18 +10,12 @@ import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class AccountHibernateRepository implements AccountRepository
 {
     private final EntityManagerFactory entityManagerFactory;
     private final HibernateQueryHelper<AccountEntity> hibernateQueryHelper;
     private final AccountAssembler accountAssembler;
-    private static final Map<Long, Account> accountsByClientIdCache = Collections.synchronizedMap(new HashMap<>());
-    private static final Map<Long, Account> accountsByBillNumberCache = Collections.synchronizedMap(new HashMap<>());
 
     public AccountHibernateRepository(AccountAssembler accountAssembler, EntityManagerFactory entityManagerFactory,
                                       HibernateQueryHelper<AccountEntity>
@@ -37,31 +31,10 @@ public class AccountHibernateRepository implements AccountRepository
     {
         AccountEntity accountEntity = this.accountAssembler.toPersistenceModel(account);
         this.hibernateQueryHelper.save(accountEntity);
-
-        updateCache(account.getClientId());
-    }
-
-    private void updateCache(long clientId)
-    {
-
-        Account account = findByClientIdInDatabase(clientId);
-        accountsByClientIdCache.put(clientId, account);
-        account.getBills()
-                .forEach(bill -> accountsByBillNumberCache.put(bill.getBillNumber(), account));
     }
 
     @Override
     public Account findByClientId(long clientId)
-    {
-        return findByClientIdInCache(clientId).orElse(findByClientIdInDatabase(clientId));
-    }
-
-    private Optional<Account> findByClientIdInCache(long clientId)
-    {
-        return Optional.ofNullable(accountsByClientIdCache.get(clientId));
-    }
-
-    private Account findByClientIdInDatabase(long clientId)
     {
         AccountEntity accountEntity;
         try
@@ -90,16 +63,6 @@ public class AccountHibernateRepository implements AccountRepository
 
     @Override
     public synchronized Account findByBillNumber(long billNumber)
-    {
-        return findByBillNumberInCache(billNumber).orElse(findByBillNumberInDatabase(billNumber));
-    }
-
-    private Optional<Account> findByBillNumberInCache(long billNumber)
-    {
-        return Optional.ofNullable(accountsByBillNumberCache.get(billNumber));
-    }
-
-    private Account findByBillNumberInDatabase(long billNumber)
     {
         try
         {
