@@ -6,13 +6,6 @@ public abstract class NotFoundException extends RuntimeException
     public final String entityName;
     public final String entityKey;
 
-    public NotFoundException(String entityName, String entityKey)
-    {
-        super();
-        this.entityName = entityName;
-        this.entityKey = entityKey;
-    }
-
     public NotFoundException(String message, String entityName, String entityKey)
     {
         super(message);

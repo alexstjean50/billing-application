@@ -1,9 +1,9 @@
 package ca.ulaval.glo4002.billing.persistence.assembler.factory;
 
+import ca.ulaval.glo4002.billing.contexts.ServiceLocator;
 import ca.ulaval.glo4002.billing.persistence.assembler.account.AccountAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.bill.BillAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.payment.PaymentAssembler;
-import ca.ulaval.glo4002.billing.persistence.manager.ServiceLocator;
 import ca.ulaval.glo4002.billing.service.repository.client.ClientRepository;
 
 public class AccountAssemblerFactory
@@ -14,12 +14,13 @@ public class AccountAssemblerFactory
 
     public AccountAssemblerFactory()
     {
-        this(ServiceLocator.getService(ServiceLocator.CLIENT_REPOSITORY), new PaymentAssemblerFactory(), new
-                BillAssemblerFactory());
+        this(ServiceLocator.getService(ClientRepository.class), new PaymentAssemblerFactory(),
+                new
+                        BillAssemblerFactory());
     }
 
-    public AccountAssemblerFactory(ClientRepository clientRepository, PaymentAssemblerFactory paymentAssemblerFactory,
-                                   BillAssemblerFactory billAssemblerFactory)
+    private AccountAssemblerFactory(ClientRepository clientRepository, PaymentAssemblerFactory paymentAssemblerFactory,
+                                    BillAssemblerFactory billAssemblerFactory)
     {
         this.clientRepository = clientRepository;
         this.paymentAssemblerFactory = paymentAssemblerFactory;

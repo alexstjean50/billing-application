@@ -8,4 +8,14 @@ public class PaymentMethod
     public String account;
     @NotNull(message = "paymentMethod.source cannot be null")
     public String source;
+
+    public PaymentMethod()
+    {
+    }
+
+    public PaymentMethod(String account, String source)
+    {
+        this.account = account;
+        this.source = source;
+    }
 }

@@ -1,21 +1,17 @@
 package ca.ulaval.glo4002.billing.domain.billing.account;
 
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
+import ca.ulaval.glo4002.billing.domain.billing.bill.BillNotYetAcceptedException;
 import ca.ulaval.glo4002.billing.domain.billing.client.Client;
-import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.domain.billing.payment.Payment;
-import ca.ulaval.glo4002.billing.domain.strategy.AllocationStrategy;
-import ca.ulaval.glo4002.billing.domain.strategy.DefaultAllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
+import ca.ulaval.glo4002.billing.domain.strategy.allocation.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
-import ca.ulaval.glo4002.billing.persistence.repository.account.BillNotFoundException;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Account
 {
@@ -52,66 +48,59 @@ public class Account
         return new Account(identity, client, allocationStrategy, payments, bills);
     }
 
-    public void createBill(long billNumber, Instant creationDate, Optional<DueTerm> dueTerm, List<Item> items)
+    public void addBill(Bill bill)
     {
-        DueTerm appliedDueTerm = dueTerm.orElseGet(this.client::getDefaultTerm);
-        Bill bill = Bill.create(billNumber, creationDate, appliedDueTerm, items);
         this.bills.add(bill);
     }
 
     public void cancelBill(long billNumber)
     {
-        Bill bill = findBillByNumber(billNumber);
+        Bill bill = findAcceptedBillByNumber(billNumber);
         bill.cancel();
         this.payments.forEach(payment -> payment.removeAllocations(billNumber));
         allocate();
     }
 
-    public Bill findBillByNumber(long billNumber)
+    private Bill findAcceptedBillByNumber(long billNumber)
     {
         return this.bills.stream()
-                .filter(bill -> bill.getBillNumber() == billNumber)
+                .filter(bill -> bill.isEqualBillNumber(billNumber) && bill.isAccepted())
                 .findFirst()
-                .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
+                .orElseThrow(() -> new BillNotYetAcceptedException("Bill not yet accepted or already cancelled."));
+    }
+
+    public BigDecimal retrieveBillAmount(long billNumber)
+    {
+        return findBillByNumber(billNumber)
+                .calculateTotalItemPrice()
+                .asBigDecimal();
     }
 
     public void addPayment(Payment payment)
     {
         this.payments.add(payment);
-    }
-
-    public void acceptBill(long billNumber, Instant acceptedDate)
-    {
-        Bill billAccepted = this.findBillByNumber(billNumber);
-        billAccepted.accept(acceptedDate);
         allocate();
     }
 
-    public void applyDiscount(long billNumber, Discount discount)
+    public Bill acceptBill(long billNumber, Instant acceptedDate)
     {
-        Bill bill = this.findBillByNumber(billNumber);
-
-        if (!bill.isAccepted())
-        {
-            throw new BillNotFoundException("A bill can't be found in an account.", String.valueOf(billNumber));
-        }
-
-        bill.addDiscount(discount);
-        bill.removeAllAllocations();
-        this.payments.forEach(payment -> payment.removeAllocations(billNumber));
+        Bill acceptedBill = this.findBillByNumber(billNumber);
+        acceptedBill.accept(acceptedDate);
         allocate();
+        return acceptedBill;
     }
 
-    public void allocate()
-    {
-        this.allocationStrategy.allocate(this.bills, this.payments);
-    }
-
-    public List<Bill> retrieveAcceptedBills()
+    public Bill findBillByNumber(long billNumber)
     {
         return this.bills.stream()
-                .filter(Bill::isAccepted)
-                .collect(Collectors.toList());
+                .filter(bill -> bill.isEqualBillNumber(billNumber))
+                .findFirst()
+                .orElseThrow(() -> new DomainAccountBillNotFoundException("A bill can't be found in an account."));
+    }
+
+    private void allocate()
+    {
+        this.allocationStrategy.allocate(this.bills, this.payments);
     }
 
     public List<Payment> getPayments()

@@ -3,13 +3,11 @@ package ca.ulaval.glo4002.billing.persistence.assembler.bill;
 import ca.ulaval.glo4002.billing.domain.billing.allocation.Allocation;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.domain.billing.bill.BillStatus;
-import ca.ulaval.glo4002.billing.domain.billing.bill.Discount;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Item;
 import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.persistence.assembler.allocation.AllocationAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AllocationEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.BillEntity;
-import ca.ulaval.glo4002.billing.persistence.entity.DiscountEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.ItemEntity;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 import org.junit.Before;
@@ -36,19 +34,15 @@ public class BillAssemblerTest
     private static final long SOME_BILL_NUMBER = 1337;
     private static final BillStatus SOME_BILL_STATUS = BillStatus.ACCEPTED;
     private static final List<ItemEntity> SOME_ITEM_ENTITIES = new ArrayList<>();
-    private static final List<DiscountEntity> SOME_DISCOUNT_ENTITIES = new ArrayList<>();
     private static final List<AllocationEntity> SOME_ALLOCATION_ENTITIES = new ArrayList<>();
     private static final List<Item> SOME_ITEMS = new ArrayList<>();
-    private static final List<Discount> SOME_DISCOUNTS = new ArrayList<>();
     private static final List<Allocation> SOME_ALLOCATIONS = new ArrayList<>();
     private static final long SOME_OTHER_BILL_NUMBER = 69;
     private static final BillStatus SOME_OTHER_BILL_STATUS = BillStatus.CANCELLED;
     private static final Instant SOME_OTHER_DATE = Instant.ofEpochMilli(1);
     private static final DueTerm SOME_OTHER_DUE_TERM = DueTerm.DAYS90;
     private static final int SOME_COUNT = 12;
-    private static final DiscountEntity SOME_DISCOUNT_ENTITY = mock(DiscountEntity.class);
     private static final ItemEntity SOME_ITEM_ENTITY = mock(ItemEntity.class);
-    private static final Discount SOME_DISCOUNT = mock(Discount.class);
     private static final Item SOME_ITEM = mock(Item.class);
     private static final AllocationEntity SOME_ALLOCATION_ENTITY = mock(AllocationEntity.class);
     private static final Allocation SOME_ALLOCATION = mock(Allocation.class);
@@ -61,15 +55,11 @@ public class BillAssemblerTest
         given(itemAssembler.toDomainModel(notNull())).willReturn(SOME_ITEM);
         given(itemAssembler.toPersistenceModel(notNull())).willReturn(SOME_ITEM_ENTITY);
 
-        DiscountAssembler discountAssembler = mock(DiscountAssembler.class);
-        given(discountAssembler.toDomainModel(notNull())).willReturn(SOME_DISCOUNT);
-        given(discountAssembler.toPersistenceModel(notNull())).willReturn(SOME_DISCOUNT_ENTITY);
-
         AllocationAssembler allocationAssembler = mock(AllocationAssembler.class);
         given(allocationAssembler.toDomainModel(notNull())).willReturn(SOME_ALLOCATION);
         given(allocationAssembler.toPersistenceModel(notNull())).willReturn(SOME_ALLOCATION_ENTITY);
 
-        this.billAssembler = new BillAssembler(itemAssembler, discountAssembler, allocationAssembler);
+        this.billAssembler = new BillAssembler(itemAssembler, allocationAssembler);
     }
 
     @Test
@@ -101,7 +91,7 @@ public class BillAssemblerTest
     {
         long expectedBillNumber = SOME_OTHER_BILL_NUMBER;
         Bill someBill = Bill.create(SOME_IDENTITY, expectedBillNumber, SOME_DATE, SOME_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, SOME_ITEMS, SOME_DISCOUNTS, SOME_ALLOCATIONS);
+                SOME_DUE_TERM, SOME_ITEMS, SOME_ALLOCATIONS);
 
         BillEntity result = this.billAssembler.toPersistenceModel(someBill);
 
@@ -125,7 +115,7 @@ public class BillAssemblerTest
     {
         BillStatus expectedBillStatus = SOME_OTHER_BILL_STATUS;
         Bill someBill = Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, expectedBillStatus, SOME_DATE,
-                SOME_DUE_TERM, SOME_ITEMS, SOME_DISCOUNTS, SOME_ALLOCATIONS);
+                SOME_DUE_TERM, SOME_ITEMS, SOME_ALLOCATIONS);
 
         BillEntity result = this.billAssembler.toPersistenceModel(someBill);
 
@@ -172,7 +162,7 @@ public class BillAssemblerTest
     {
         Instant expectedEffectiveDate = SOME_OTHER_DATE;
         Bill someBill = Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_BILL_STATUS, expectedEffectiveDate,
-                SOME_DUE_TERM, SOME_ITEMS, SOME_DISCOUNTS, SOME_ALLOCATIONS);
+                SOME_DUE_TERM, SOME_ITEMS, SOME_ALLOCATIONS);
 
         BillEntity result = this.billAssembler.toPersistenceModel(someBill);
 
@@ -220,7 +210,7 @@ public class BillAssemblerTest
         int expectedItemEntityCount = SOME_COUNT;
         List<Item> someItems = Collections.nCopies(expectedItemEntityCount, SOME_ITEM);
         Bill someBill = Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, someItems, SOME_DISCOUNTS, SOME_ALLOCATIONS);
+                SOME_DUE_TERM, someItems, SOME_ALLOCATIONS);
 
         BillEntity result = this.billAssembler.toPersistenceModel(someBill);
 
@@ -241,38 +231,12 @@ public class BillAssemblerTest
     }
 
     @Test
-    public void givenABill_whenConvertedToBillEntity_thenAllDiscountsShouldBeConverted()
-    {
-        int expectedDiscountEntityCount = SOME_COUNT;
-        List<Discount> someDiscounts = Collections.nCopies(expectedDiscountEntityCount, SOME_DISCOUNT);
-        Bill someBill = Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, SOME_ITEMS, someDiscounts, SOME_ALLOCATIONS);
-
-        BillEntity result = this.billAssembler.toPersistenceModel(someBill);
-
-        assertHasExactlyXNotNullElements(expectedDiscountEntityCount, result.getDiscountEntities());
-    }
-
-    @Test
-    public void givenABillEntity_whenConvertedToBill_thenAllDiscountEntitiesShouldBeConverted()
-    {
-        int expectedDiscountCount = SOME_COUNT;
-        List<DiscountEntity> someDiscountEntities = Collections.nCopies(expectedDiscountCount, SOME_DISCOUNT_ENTITY);
-        BillEntity someBillEntity = createSomeBillEntity();
-        someBillEntity.setDiscountEntities(someDiscountEntities);
-
-        Bill result = this.billAssembler.toDomainModel(someBillEntity);
-
-        assertHasExactlyXNotNullElements(expectedDiscountCount, result.getDiscounts());
-    }
-
-    @Test
     public void givenABill_whenConvertedToBillEntity_thenAllAllocationsShouldBeConverted()
     {
         int expectedAllocationEntityCount = SOME_COUNT;
         List<Allocation> someAllocations = Collections.nCopies(expectedAllocationEntityCount, SOME_ALLOCATION);
         Bill someBill = Bill.create(SOME_IDENTITY, SOME_BILL_NUMBER, SOME_DATE, SOME_BILL_STATUS, SOME_DATE,
-                SOME_DUE_TERM, SOME_ITEMS, SOME_DISCOUNTS, someAllocations);
+                SOME_DUE_TERM, SOME_ITEMS, someAllocations);
 
         BillEntity result = this.billAssembler.toPersistenceModel(someBill);
 
@@ -296,6 +260,6 @@ public class BillAssemblerTest
     private BillEntity createSomeBillEntity()
     {
         return new BillEntity(SOME_ID, SOME_BILL_NUMBER, SOME_BILL_STATUS, SOME_DATE, SOME_DATE,
-                SOME_DUE_TERM, SOME_ITEM_ENTITIES, SOME_DISCOUNT_ENTITIES, SOME_ALLOCATION_ENTITIES);
+                SOME_DUE_TERM, SOME_ITEM_ENTITIES, SOME_ALLOCATION_ENTITIES);
     }
 }

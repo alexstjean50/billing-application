@@ -13,7 +13,7 @@ public class HibernateQueryHelper<T>
     private final EntityManagerFactory entityManagerFactory;
     private final Class<T> persistentClass;
 
-    HibernateQueryHelper(Class<T> persistentClass, EntityManagerFactory entityManagerFactory)
+    public HibernateQueryHelper(Class<T> persistentClass, EntityManagerFactory entityManagerFactory)
     {
         this.entityManagerFactory = entityManagerFactory;
         this.persistentClass = persistentClass;

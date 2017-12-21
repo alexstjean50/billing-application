@@ -14,7 +14,7 @@ public class PaymentAssemblerFactory
         this(new PaymentMethodAssemblerFactory(), new AllocationAssembler());
     }
 
-    public PaymentAssemblerFactory(PaymentMethodAssemblerFactory paymentMethodAssemblerFactory, AllocationAssembler
+    private PaymentAssemblerFactory(PaymentMethodAssemblerFactory paymentMethodAssemblerFactory, AllocationAssembler
             allocationAssembler)
     {
         this.paymentMethodAssemblerFactory = paymentMethodAssemblerFactory;

@@ -1,8 +1,8 @@
-# Projet 2017 - Équipe Qualiteam (#5)
+# Projet 2017 - Équipe Qualiteam (#5) - Alex St-Jean
  
 ## Avancement du projet
-Pour la remise 2, les récits utilisateurs 2, 3, 4, 5, 6, 7 et 8 ont été complétés. La #1 a été complété lors de la remise 1.
+Pour la remise 3, le récit utilisateur 11 a été complété. La #6,7,8 ont été supprimées.
 
- 
-## Permissions spéciales accordées
-Samuel Foisy suit le cours IFT-6002 et a eu l'autorisation de rejoindre notre équipe.
+## Notes spéciales
+- Pour les tests d'intégrations, il faut démarrer le CRM à part.
+- Le test de performance se trouve dans le fichier "TestPerformance.jmx" se trouvant à la racine du projet.

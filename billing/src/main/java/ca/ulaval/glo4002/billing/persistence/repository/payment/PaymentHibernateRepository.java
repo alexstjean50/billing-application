@@ -17,7 +17,7 @@ public class PaymentHibernateRepository implements PaymentRepository
     }
 
     @Override
-    public long retrieveNextPaymentNumber()
+    public synchronized long retrieveNextPaymentNumber()
     {
         Optional<BigInteger> maximumPaymentNumber = this.retrieveMaximumPaymentNumber();
 

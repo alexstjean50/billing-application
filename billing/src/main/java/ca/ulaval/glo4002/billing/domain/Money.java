@@ -19,11 +19,6 @@ public class Money
         return new Money(BigDecimal.valueOf(value));
     }
 
-    public static Money valueOf(double value)
-    {
-        return new Money(BigDecimal.valueOf(value));
-    }
-
     public static Money valueOf(BigDecimal value)
     {
         return new Money(value);
@@ -49,11 +44,6 @@ public class Money
         return valueOf(this.amount.subtract(money.amount));
     }
 
-    public boolean isGreaterThan(Money money)
-    {
-        return this.amount.compareTo(money.amount) > 0;
-    }
-
     public boolean isGreaterOrEqualTo(Money money)
     {
         return this.amount.compareTo(money.amount) >= 0;
@@ -67,11 +57,6 @@ public class Money
     public Money min(Money money)
     {
         return valueOf(this.amount.min(money.amount));
-    }
-
-    public boolean equals(BigDecimal amount)
-    {
-        return this.equals(valueOf(amount));
     }
 
     @Override

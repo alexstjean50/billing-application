@@ -10,8 +10,6 @@ import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class AccountHibernateRepository implements AccountRepository
 {
@@ -33,15 +31,6 @@ public class AccountHibernateRepository implements AccountRepository
     {
         AccountEntity accountEntity = this.accountAssembler.toPersistenceModel(account);
         this.hibernateQueryHelper.save(accountEntity);
-    }
-
-    @Override
-    public List<Account> findAll()
-    {
-        return this.hibernateQueryHelper.findAll()
-                .stream()
-                .map(accountAssembler::toDomainModel)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -80,7 +69,7 @@ public class AccountHibernateRepository implements AccountRepository
             //@formatter:off
             String query =
                     "select " +
-                        "accountEntity " +
+                            "accountEntity " +
                     "from " +
                         "AccountEntity accountEntity " +
                     "join " +

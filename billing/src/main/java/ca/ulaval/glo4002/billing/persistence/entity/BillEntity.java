@@ -31,9 +31,6 @@ public class BillEntity implements Serializable
     @JoinColumn(name = "BILL_ID", referencedColumnName = "BILL_ID")
     private List<ItemEntity> itemEntities;
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "BILL_ID", referencedColumnName = "BILL_ID")
-    private List<DiscountEntity> discountEntities;
-    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "BILL_NUMBER", referencedColumnName = "BILL_NUMBER")
     private List<AllocationEntity> allocationEntities;
 
@@ -42,7 +39,7 @@ public class BillEntity implements Serializable
     }
 
     public BillEntity(long billId, long billNumber, BillStatus status, Instant creationDate, Instant effectiveDate,
-                      DueTerm dueTerm, List<ItemEntity> itemEntities, List<DiscountEntity> discountEntities,
+                      DueTerm dueTerm, List<ItemEntity> itemEntities,
                       List<AllocationEntity> allocationEntities)
     {
         this.billId = billId;
@@ -52,7 +49,6 @@ public class BillEntity implements Serializable
         this.effectiveDate = effectiveDate;
         this.dueTerm = dueTerm;
         this.itemEntities = itemEntities;
-        this.discountEntities = discountEntities;
         this.allocationEntities = allocationEntities;
     }
 
@@ -89,11 +85,6 @@ public class BillEntity implements Serializable
     public List<ItemEntity> getItemEntities()
     {
         return this.itemEntities;
-    }
-
-    public List<DiscountEntity> getDiscountEntities()
-    {
-        return this.discountEntities;
     }
 
     public List<AllocationEntity> getAllocationEntities()
@@ -134,11 +125,6 @@ public class BillEntity implements Serializable
     public void setItemEntities(List<ItemEntity> itemEntities)
     {
         this.itemEntities = itemEntities;
-    }
-
-    public void setDiscountEntities(List<DiscountEntity> discountEntities)
-    {
-        this.discountEntities = discountEntities;
     }
 
     public void setAllocationEntities(List<AllocationEntity> allocationEntities)

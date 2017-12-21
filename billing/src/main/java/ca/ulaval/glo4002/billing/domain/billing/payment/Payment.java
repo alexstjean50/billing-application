@@ -57,7 +57,8 @@ public class Payment implements Comparable<Payment>
     @Override
     public int compareTo(Payment that)
     {
-        return this.paymentDate.isBefore(that.getPaymentDate()) ? -1 : 1;
+        return this.getPaymentDate()
+                .isBefore(that.getPaymentDate()) ? -1 : 1;
     }
 
     public Instant getPaymentDate()
