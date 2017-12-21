@@ -4,12 +4,14 @@ import ca.ulaval.glo4002.billing.domain.billing.client.DueTerm;
 import ca.ulaval.glo4002.billing.service.dto.serializer.InstantDeserializer;
 import ca.ulaval.glo4002.billing.service.dto.serializer.InstantSerializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Instant;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClientEntity
 {
     private final long id;
