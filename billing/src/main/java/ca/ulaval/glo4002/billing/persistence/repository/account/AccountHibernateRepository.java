@@ -27,7 +27,7 @@ public class AccountHibernateRepository implements AccountRepository
     }
 
     @Override
-    public synchronized void save(Account account)
+    public void save(Account account)
     {
         AccountEntity accountEntity = this.accountAssembler.toPersistenceModel(account);
         this.hibernateQueryHelper.save(accountEntity);
@@ -62,7 +62,7 @@ public class AccountHibernateRepository implements AccountRepository
     }
 
     @Override
-    public synchronized Account findByBillNumber(long billNumber)
+    public Account findByBillNumber(long billNumber)
     {
         try
         {

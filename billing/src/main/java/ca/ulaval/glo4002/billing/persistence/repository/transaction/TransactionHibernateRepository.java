@@ -40,7 +40,7 @@ public class TransactionHibernateRepository implements TransactionRepository
     }
 
     @Override
-    public synchronized List<Transaction> findByFilter(Optional<String> optionalStartMonth, Optional<String>
+    public List<Transaction> findByFilter(Optional<String> optionalStartMonth, Optional<String>
             optionalEndMonth, Optional<Long> optionalYear)
     {
         List<Transaction> transactions = findAll();
@@ -65,7 +65,7 @@ public class TransactionHibernateRepository implements TransactionRepository
         return transactions;
     }
 
-    private synchronized List<Transaction> findAll()
+    private List<Transaction> findAll()
     {
         return this.transactionEntityHibernateQueryHelper.findAll()
                 .stream()
