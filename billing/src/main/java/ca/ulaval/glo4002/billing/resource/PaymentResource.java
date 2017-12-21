@@ -8,7 +8,6 @@ import ca.ulaval.glo4002.billing.service.assembler.domain.DomainAccountAssembler
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainPaymentAssembler;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainTransactionAssembler;
 import ca.ulaval.glo4002.billing.service.dto.request.PaymentCreationRequest;
-import ca.ulaval.glo4002.billing.service.dto.request.validation.RequestValidator;
 import ca.ulaval.glo4002.billing.service.dto.response.PaymentCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.PaymentCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
@@ -18,6 +17,7 @@ import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import ca.ulaval.glo4002.billing.service.repository.payment.PaymentRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -61,15 +61,8 @@ public class PaymentResource
     }
 
     @POST
-    public Response createPayment(PaymentCreationRequest request)
+    public Response createPayment(@Valid PaymentCreationRequest request)
     {
-        RequestValidator requestValidator = new RequestValidator<>(request);
-
-        if (!requestValidator.isRequestValid())
-        {
-            return requestValidator.generateValidationErrorResponse();
-        }
-
         PaymentCreationResponse response = this.paymentService.createPayment(request);
 
         this.transactionService.logTransaction(request.getClientId(), request.getAmount(), TransactionType.PAYMENT);
