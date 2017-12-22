@@ -46,15 +46,7 @@ public class TransactionHibernateRepository implements TransactionRepository
     {
         try
         {
-            //@formatter:off
-            String query =
-                    "select " +
-                        "transactionEntity " +
-                    "from " +
-                        "TransactionEntity transactionEntity " +
-                    (optionalYear.isPresent() ? generateMonthFilterString(optionalStartMonth,
-                            optionalEndMonth) : "");
-            //@formatter:on
+            String query = generateFilteredTransactionQuery(optionalStartMonth, optionalEndMonth, optionalYear);
             return executeFilteredQuery(query, optionalStartMonth, optionalEndMonth,
                     optionalYear)
                     .stream()
@@ -96,7 +88,8 @@ public class TransactionHibernateRepository implements TransactionRepository
         return (List<TransactionEntity>) hibernateQuery.getResultList();
     }
 
-    private String generateMonthFilterString(Optional<String> optionalStartMonth, Optional<String> optionalEndMonth)
+    private String generateFilteredTransactionQuery(Optional<String> optionalStartMonth, Optional<String>
+            optionalEndMonth, Optional<Integer> optionalYear)
     {
         String generatedFilter = "WHERE YEAR(transactionEntity.date) = :year ";
         if (optionalStartMonth.isPresent())
@@ -109,7 +102,16 @@ public class TransactionHibernateRepository implements TransactionRepository
             generatedFilter += "AND MONTH(transactionEntity.date) <= :endMonth ";
         }
 
-        return generatedFilter;
+        //@formatter:off
+        String query =
+                "select " +
+                    "transactionEntity " +
+                "from " +
+                    "TransactionEntity transactionEntity " +
+                (optionalYear.isPresent() ? generatedFilter : "");
+        //@formatter:on
+
+        return query;
     }
 
     @SuppressWarnings("unchecked")
