@@ -33,6 +33,8 @@ public class AccountTest
     @Mock
     private Bill bill;
     @Mock
+    private Payment payment;
+    @Mock
     private AllocationStrategy allocationStrategy;
     private Instant someDate;
 
@@ -137,6 +139,27 @@ public class AccountTest
         Account account = createAccountWithABill(this.bill);
 
         account.cancelBill(SOME_BILL_NUMBER, this.someDate);
+
+        verify(this.allocationStrategy).allocate(account.getBills(), account.getPayments(), this.someDate);
+    }
+
+    @Test
+    public void givenAPayment_whenAddingPayment_thenShouldAddPayment()
+    {
+        Account account = createAccountWithABill(this.bill);
+
+        account.addPayment(this.payment, this.someDate);
+
+        assertTrue(account.getPayments()
+                .contains(this.payment));
+    }
+
+    @Test
+    public void givenAPayment_whenAddingPayment_thenShouldReallocate()
+    {
+        Account account = createAccountWithABill(this.bill);
+
+        account.addPayment(this.payment, this.someDate);
 
         verify(this.allocationStrategy).allocate(account.getBills(), account.getPayments(), this.someDate);
     }
