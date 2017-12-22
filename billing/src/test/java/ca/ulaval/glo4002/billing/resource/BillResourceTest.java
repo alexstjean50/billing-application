@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.resource;
 
+import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
@@ -19,7 +20,7 @@ public class BillResourceTest
 {
     private static final long SOME_CLIENT_ID = 1L;
     private static final int SOME_BILL_NUMBER = 12;
-    private static final BigDecimal SOME_AMOUNT = BigDecimal.TEN;
+    private static final Money SOME_AMOUNT = Money.valueOf(BigDecimal.TEN);
     @Mock
     private TransactionService transactionService;
     @Mock
@@ -40,6 +41,7 @@ public class BillResourceTest
 
         this.billResource.acceptBill(SOME_BILL_NUMBER);
 
-        verify(this.transactionService).logTransaction(SOME_CLIENT_ID, SOME_AMOUNT, TransactionType.INVOICE);
+        verify(this.transactionService).logTransaction(SOME_CLIENT_ID, SOME_AMOUNT.asBigDecimal(), TransactionType
+                .INVOICE);
     }
 }

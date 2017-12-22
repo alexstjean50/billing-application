@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
+@Table(name = "ITEM")
 public class ItemEntity implements Serializable
 {
     private static final long serialVersionUID = -1465474995790558906L;
@@ -14,9 +15,9 @@ public class ItemEntity implements Serializable
     private long itemId;
     @Column
     private long productId;
-    @Column
+    @Column(name = "QUANTITY")
     private int quantity;
-    @Column
+    @Column(name = "PAID_PRICE")
     private BigDecimal paidPrice;
     @Column
     private String note;

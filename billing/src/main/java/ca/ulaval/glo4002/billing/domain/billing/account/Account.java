@@ -8,7 +8,6 @@ import ca.ulaval.glo4002.billing.domain.strategy.allocation.AllocationStrategy;
 import ca.ulaval.glo4002.billing.domain.strategy.allocation.DefaultAllocationStrategy;
 import ca.ulaval.glo4002.billing.persistence.identity.Identity;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,13 +66,6 @@ public class Account
                 .filter(bill -> bill.isEqualBillNumber(billNumber) && bill.isAccepted())
                 .findFirst()
                 .orElseThrow(() -> new BillNotYetAcceptedException("Bill not yet accepted or already cancelled."));
-    }
-
-    public BigDecimal retrieveBillAmount(long billNumber)
-    {
-        return findBillByNumber(billNumber)
-                .calculateTotalItemPrice()
-                .asBigDecimal();
     }
 
     public void addPayment(Payment payment, Instant currentTime)

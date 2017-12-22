@@ -1,6 +1,7 @@
 package ca.ulaval.glo4002.billing.resource;
 
 import ca.ulaval.glo4002.billing.contexts.ServiceLocator;
+import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.transaction.TransactionType;
 import ca.ulaval.glo4002.billing.service.BillService;
 import ca.ulaval.glo4002.billing.service.TransactionService;
@@ -26,7 +27,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.math.BigDecimal;
 
 @Path("/bills")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -56,7 +56,7 @@ public class BillResource
         DomainTransactionAssembler domainTransactionAssembler = new DomainTransactionAssembler(clockRepository,
                 transactionRepository);
 
-        this.billService = new BillService(accountRepository, clockRepository, domainBillAssembler,
+        this.billService = new BillService(accountRepository, clockRepository, billRepository, domainBillAssembler,
                 billCreationResponseAssembler,
                 billAcceptationResponseAssembler, accountRetriever);
         this.transactionService = new TransactionService(transactionRepository, domainTransactionAssembler);
@@ -86,9 +86,9 @@ public class BillResource
 
         long clientId = this.billService.retrieveRelatedClientId(billNumber);
 
-        BigDecimal billAmount = this.billService.retrieveBillAmount(billNumber);
+        Money billAmount = this.billService.retrieveBillAmount(billNumber);
 
-        this.transactionService.logTransaction(clientId, billAmount, TransactionType.INVOICE);
+        this.transactionService.logTransaction(clientId, billAmount.asBigDecimal(), TransactionType.INVOICE);
 
         return Response.ok()
                 .entity(response)
@@ -103,9 +103,9 @@ public class BillResource
 
         long clientId = this.billService.retrieveRelatedClientId(billNumber);
 
-        BigDecimal billAmount = this.billService.retrieveBillAmount(billNumber);
+        Money billAmount = this.billService.retrieveBillAmount(billNumber);
 
-        this.transactionService.logTransaction(clientId, billAmount, TransactionType.INVOICE_CANCELLED);
+        this.transactionService.logTransaction(clientId, billAmount.asBigDecimal(), TransactionType.INVOICE_CANCELLED);
 
         return Response.accepted()
                 .build();

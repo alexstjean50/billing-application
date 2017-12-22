@@ -20,9 +20,9 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class PaymentResourceTest
 {
-    public static final long SOME_CLIENT_ID = 1L;
-    public static final int SOME_PAYMENT_NUMBER = 12;
-    public static final BigDecimal SOME_AMOUNT = BigDecimal.TEN;
+    private static final long SOME_CLIENT_ID = 1L;
+    private static final int SOME_PAYMENT_NUMBER = 12;
+    private static final BigDecimal SOME_AMOUNT = BigDecimal.TEN;
     @Mock
     private TransactionService transactionService;
     private PaymentCreationResponse paymentCreationResponse;

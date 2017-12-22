@@ -1,5 +1,6 @@
 package ca.ulaval.glo4002.billing.service;
 
+import ca.ulaval.glo4002.billing.domain.Money;
 import ca.ulaval.glo4002.billing.domain.billing.account.Account;
 import ca.ulaval.glo4002.billing.domain.billing.bill.Bill;
 import ca.ulaval.glo4002.billing.service.assembler.domain.DomainBillAssembler;
@@ -9,28 +10,30 @@ import ca.ulaval.glo4002.billing.service.dto.response.BillCreationResponse;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillAcceptationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.dto.response.assembler.BillCreationResponseAssembler;
 import ca.ulaval.glo4002.billing.service.repository.account.AccountRepository;
+import ca.ulaval.glo4002.billing.service.repository.bill.BillRepository;
 import ca.ulaval.glo4002.billing.service.repository.clock.ClockRepository;
 import ca.ulaval.glo4002.billing.service.retriever.AccountRetriever;
-
-import java.math.BigDecimal;
 
 public class BillService
 {
     private final AccountRepository accountRepository;
     private final ClockRepository clockRepository;
+    private final BillRepository billRepository;
     private final DomainBillAssembler domainBillAssembler;
     private final BillCreationResponseAssembler billCreationResponseAssembler;
     private final BillAcceptationResponseAssembler billAcceptationResponseAssembler;
     private final AccountRetriever accountRetriever;
 
     public BillService(AccountRepository accountRepository,
-                       ClockRepository clockRepository, DomainBillAssembler domainBillAssembler,
+                       ClockRepository clockRepository, BillRepository billRepository, DomainBillAssembler
+                               domainBillAssembler,
                        BillCreationResponseAssembler billCreationResponseAssembler,
                        BillAcceptationResponseAssembler billAcceptationResponseAssembler,
                        AccountRetriever accountRetriever)
     {
         this.accountRepository = accountRepository;
         this.clockRepository = clockRepository;
+        this.billRepository = billRepository;
         this.domainBillAssembler = domainBillAssembler;
         this.billCreationResponseAssembler = billCreationResponseAssembler;
         this.billAcceptationResponseAssembler = billAcceptationResponseAssembler;
@@ -71,10 +74,8 @@ public class BillService
         return account.getClientId();
     }
 
-    public BigDecimal retrieveBillAmount(long billNumber)
+    public Money retrieveBillAmount(long billNumber)
     {
-        Account account = this.accountRepository.findByBillNumber(billNumber);
-
-        return account.retrieveBillAmount(billNumber);
+        return this.billRepository.retrieveBillAmount(billNumber);
     }
 }

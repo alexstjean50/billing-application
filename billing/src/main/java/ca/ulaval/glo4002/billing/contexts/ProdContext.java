@@ -1,11 +1,14 @@
 package ca.ulaval.glo4002.billing.contexts;
 
 import ca.ulaval.glo4002.billing.persistence.assembler.account.AccountAssembler;
+import ca.ulaval.glo4002.billing.persistence.assembler.bill.BillAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.client.ClientAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.factory.AccountAssemblerFactory;
+import ca.ulaval.glo4002.billing.persistence.assembler.factory.BillAssemblerFactory;
 import ca.ulaval.glo4002.billing.persistence.assembler.product.ProductAssembler;
 import ca.ulaval.glo4002.billing.persistence.assembler.transaction.TransactionAssembler;
 import ca.ulaval.glo4002.billing.persistence.entity.AccountEntity;
+import ca.ulaval.glo4002.billing.persistence.entity.BillEntity;
 import ca.ulaval.glo4002.billing.persistence.entity.TransactionEntity;
 import ca.ulaval.glo4002.billing.persistence.manager.HibernateQueryHelper;
 import ca.ulaval.glo4002.billing.persistence.manager.factory.EntityManagerFactoryProvider;
@@ -58,18 +61,21 @@ public class ProdContext implements Context
 
         HibernateQueryHelper<AccountEntity> accountEntityHibernateQueryHelper =
                 new HibernateQueryHelper<>(AccountEntity.class, entityManagerFactory);
-
+        HibernateQueryHelper<BillEntity> billEntityHibernateQueryHelper =
+                new HibernateQueryHelper<>(BillEntity.class, entityManagerFactory);
         HibernateQueryHelper<TransactionEntity> transactionEntityHibernateQueryHelper =
                 new HibernateQueryHelper<>(TransactionEntity.class, entityManagerFactory);
 
         AccountAssembler accountAssembler = new AccountAssemblerFactory().create();
+        BillAssembler billAssembler = new BillAssemblerFactory().create();
 
         TransactionAssembler transactionAssembler = new TransactionAssembler();
 
         ServiceLocator.loadService(AccountRepository.class, new AccountHibernateRepository(accountAssembler,
                 entityManagerFactory,
                 accountEntityHibernateQueryHelper));
-        ServiceLocator.loadService(BillRepository.class, new BillHibernateRepository(entityManagerFactory));
+        ServiceLocator.loadService(BillRepository.class, new BillHibernateRepository(entityManagerFactory,
+                billAssembler, billEntityHibernateQueryHelper));
         ServiceLocator.loadService(PaymentRepository.class, new PaymentHibernateRepository(entityManagerFactory));
         ServiceLocator.loadService(TransactionRepository.class,
                 new TransactionHibernateRepository(transactionEntityHibernateQueryHelper, entityManagerFactory,
