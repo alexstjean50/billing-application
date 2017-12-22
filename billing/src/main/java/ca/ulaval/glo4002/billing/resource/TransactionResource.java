@@ -34,14 +34,14 @@ public class TransactionResource
     @GET
     public TransactionsResponse retrieveTransactions(@QueryParam("startMonth") String startMonth,
                                                      @QueryParam("endMonth") String endMonth,
-                                                     @QueryParam("year") Long year)
+                                                     @QueryParam("year") Integer year)
     {
         startMonth = StringUtils.stripStart(startMonth, "0");
         endMonth = StringUtils.stripStart(endMonth, "0");
 
         Optional<String> optionalStartMonth = Optional.ofNullable(startMonth);
         Optional<String> optionalEndMonth = Optional.ofNullable(endMonth);
-        Optional<Long> optionalYear = Optional.ofNullable(year);
+        Optional<Integer> optionalYear = Optional.ofNullable(year);
 
         List<TransactionEntryResponse> transactionEntryResponses =
                 this.transactionService.retrieveTransactions(optionalStartMonth, optionalEndMonth, optionalYear);

@@ -32,7 +32,7 @@ public class TransactionService
 
     public List<TransactionEntryResponse> retrieveTransactions(Optional<String> optionalStartMonth,
                                                                Optional<String> optionalEndMonth,
-                                                               Optional<Long> optionalYear)
+                                                               Optional<Integer> optionalYear)
     {
         List<Transaction> transactions = this.transactionRepository.findByFilter(optionalStartMonth,
                 optionalEndMonth, optionalYear);

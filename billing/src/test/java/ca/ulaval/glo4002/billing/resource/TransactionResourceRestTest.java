@@ -29,7 +29,7 @@ public class TransactionResourceRestTest extends RestTestBase
 {
     private static final String START_MONTH = "01";
     private static final String END_MONTH = "02";
-    private static final Long YEAR = 2017L;
+    private static final Integer YEAR = 2017;
     private static final int SOME_CLIENT_ID = 1;
     private static final BigDecimal SOME_PAYMENT_AMOUNT = new BigDecimal(30);
     private static final BigDecimal SOME_BILL_AMOUNT = new BigDecimal(120);

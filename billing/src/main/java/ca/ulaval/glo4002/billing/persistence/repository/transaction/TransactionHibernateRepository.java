@@ -9,9 +9,10 @@ import ca.ulaval.glo4002.billing.service.repository.TransactionRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,63 +42,74 @@ public class TransactionHibernateRepository implements TransactionRepository
 
     @Override
     public List<Transaction> findByFilter(Optional<String> optionalStartMonth, Optional<String>
-            optionalEndMonth, Optional<Long> optionalYear)
+            optionalEndMonth, Optional<Integer> optionalYear)
     {
-        List<Transaction> transactions = findAll();
+        try
+        {
+            //@formatter:off
+            String query =
+                    "select " +
+                        "transactionEntity " +
+                    "from " +
+                        "TransactionEntity transactionEntity " +
+                    (optionalYear.isPresent() ? generateMonthFilterString(optionalStartMonth,
+                            optionalEndMonth) : "");
+            //@formatter:on
+            return executeFilteredQuery(query, optionalStartMonth, optionalEndMonth,
+                    optionalYear)
+                    .stream()
+                    .map(this.transactionAssembler::toDomainModel)
+                    .collect(Collectors.toList());
+        }
+        catch (NoResultException exception)
+        {
+            return new ArrayList<>();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<TransactionEntity> executeFilteredQuery(String query, Optional<String> optionalStartMonth,
+                                                         Optional<String>
+                                                                 optionalEndMonth, Optional<Integer> optionalYear)
+    {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        Query hibernateQuery = entityManager
+                .createQuery(query, TransactionEntity.class);
 
         if (optionalYear.isPresent())
         {
+            hibernateQuery.setParameter("year", optionalYear.get());
+
             if (optionalStartMonth.isPresent())
             {
                 int startMonth = Integer.valueOf(optionalStartMonth.get());
-                transactions = filterTransactionsByStartMonth(transactions, startMonth);
+                hibernateQuery.setParameter("startMonth", startMonth);
             }
 
             if (optionalEndMonth.isPresent())
             {
                 int endMonth = Integer.valueOf(optionalEndMonth.get());
-                transactions = filterTransactionsByEndMonth(transactions, endMonth);
+                hibernateQuery.setParameter("endMonth", endMonth);
             }
-
-            transactions = filterTransactionsByYear(optionalYear.get(), transactions);
         }
 
-        return transactions;
+        return (List<TransactionEntity>) hibernateQuery.getResultList();
     }
 
-    private List<Transaction> findAll()
+    private String generateMonthFilterString(Optional<String> optionalStartMonth, Optional<String> optionalEndMonth)
     {
-        return this.transactionEntityHibernateQueryHelper.findAll()
-                .stream()
-                .map(this.transactionAssembler::toDomainModel)
-                .collect(Collectors.toList());
-    }
+        String generatedFilter = "WHERE YEAR(transactionEntity.date) = :year ";
+        if (optionalStartMonth.isPresent())
+        {
+            generatedFilter += "AND MONTH(transactionEntity.date) >= :startMonth ";
+        }
 
-    private List<Transaction> filterTransactionsByStartMonth(List<Transaction> transactions, int startMonth)
-    {
-        transactions = transactions.stream()
-                .filter(transaction -> LocalDateTime.ofInstant(transaction.getDate(), ZoneId.systemDefault())
-                        .getMonthValue() >= startMonth)
-                .collect(Collectors.toList());
-        return transactions;
-    }
+        if (optionalEndMonth.isPresent())
+        {
+            generatedFilter += "AND MONTH(transactionEntity.date) <= :endMonth ";
+        }
 
-    private List<Transaction> filterTransactionsByYear(long year, List<Transaction> transactions)
-    {
-        transactions = transactions.stream()
-                .filter(transaction -> LocalDateTime.ofInstant(transaction.getDate(), ZoneId.systemDefault())
-                        .getYear() == year)
-                .collect(Collectors.toList());
-        return transactions;
-    }
-
-    private List<Transaction> filterTransactionsByEndMonth(List<Transaction> transactions, int endMonth)
-    {
-        transactions = transactions.stream()
-                .filter(transaction -> LocalDateTime.ofInstant(transaction.getDate(), ZoneId.systemDefault())
-                        .getMonthValue() <= endMonth)
-                .collect(Collectors.toList());
-        return transactions;
+        return generatedFilter;
     }
 
     @SuppressWarnings("unchecked")

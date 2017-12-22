@@ -10,8 +10,8 @@ public interface TransactionRepository
 {
     void save(Transaction transaction);
 
-    List<Transaction> findByFilter(Optional<String> optionalStartMonth, Optional<String> optionalEndMonth, Optional
-            <Long> optionalYear);
+    List<Transaction> findByFilter(Optional<String> optionalStartMonth, Optional<String>
+            optionalEndMonth, Optional<Integer> optionalYear);
 
     Money retrieveCurrentLedgerBalance();
 }

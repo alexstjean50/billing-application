@@ -23,7 +23,7 @@ public class TransactionServiceTest
     private static final BigDecimal SOME_AMOUNT = BigDecimal.TEN;
     private static final TransactionType SOME_TRANSACTION_TYPE = TransactionType.INVOICE;
     private static final Optional<String> SOME_MONTH = Optional.of("2");
-    private static final Optional<Long> SOME_YEAR = Optional.of(2017L);
+    private static final Optional<Integer> SOME_YEAR = Optional.of(2017);
     @Mock
     private DomainTransactionAssembler domainTransactionAssembler;
     @Mock
