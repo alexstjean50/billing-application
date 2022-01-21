@@ -30,7 +30,7 @@
         <org.mockito.version>2.10.0</org.mockito.version>
         <org.hibernate.version>5.1.0.Final</org.hibernate.version>
         <org.hibernate.javax.persistence.version>1.0.0.Final</org.hibernate.javax.persistence.version>
-        <com.h2database.version>1.4.187</com.h2database.version>
+        <com.h2database.version>2.1.210</com.h2database.version>
     </properties>
 
     <dependencyManagement>
