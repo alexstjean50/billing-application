@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
         <org.springframework.boot.version>1.5.7.RELEASE</org.springframework.boot.version>
-        <org.springframework.version>4.3.11.RELEASE</org.springframework.version>
+        <org.springframework.version>6.0.0</org.springframework.version>
         <crm.version>1.0-SNAPSHOT</crm.version>
         <billing.version>1.0-SNAPSHOT</billing.version>
         <org.glassfish.jersey.version>2.26</org.glassfish.jersey.version>
